@@ -1,0 +1,22 @@
+version = 1
+revision = 3
+requires-python = ">=3.13"
+
+[[package]]
+name = "mlx"
+version = "2.2"
+source = { path = "mlx-2.2-cp313-cp313-linux_x86_64.whl" }
+wheels = [
+    { filename = "mlx-2.2-cp313-cp313-linux_x86_64.whl", hash = "sha256:7a1a44b50b6295f574522ba1a1e589632c6299d193dec57c951e8fdfb3337195" },
+]
+
+[[package]]
+name = "mlx-wrapper"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "mlx" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "mlx", path = "mlx-2.2-cp313-cp313-linux_x86_64.whl" }]
