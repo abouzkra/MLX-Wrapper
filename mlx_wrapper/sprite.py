@@ -1,5 +1,6 @@
 import os
 from enum import Enum, auto
+from typing import Optional
 from mlx import Mlx
 
 
@@ -50,6 +51,12 @@ class Sprite:
             offset = y * self.sl + x * self.bytes_pp
             self.data[offset: offset + self.bytes_pp] = color.to_bytes(self.bytes_pp, 'little')
 
+    def get_pixel(self, x: int, y: int) -> int:
+        if 0 <= x < self.width and 0 <= y < self.height:
+            offset = y * self.sl + x * self.bytes_pp
+            return int.from_bytes(self.data[offset: offset + self.bytes_pp + 1]) | 0xFF000000
+        return 0
+
     def fill(self, color: int) -> None:
         color_bytes = color.to_bytes(self.bytes_pp, 'little')
         for y in range(self.height):
@@ -57,6 +64,17 @@ class Sprite:
             for x in range(self.width):
                 offset = row + x * self.bytes_pp
                 self.data[offset: offset + self.bytes_pp] = color_bytes
+
+    def blit(self, target: "Sprite", dest_x: int, dest_y: int, colorkey: Optional[int] = None) -> None:
+        for sy in range(self.height):
+            ty = dest_y + sy
+            if 0 <= ty < target.height:
+                for sx in range(self.width):
+                    tx = dest_x + sx
+                    if 0 <= tx < target.width:
+                        pixel_color = self.get_pixel(sx, sy)
+                        if colorkey is None or pixel_color != colorkey:
+	                        target.set_pixel(tx, ty, pixel_color)
 
     def draw_to_window(self, win_ptr: int, x: int, y: int) -> None:
         self.mlx.mlx_put_image_to_window(
@@ -134,3 +152,7 @@ class AnimatedSprite:
                 else:
                     self.is_playing = False
                     self.is_finished = True
+
+    def draw(self, target: Sprite, x: int, y: int, colorkey: Optional[int] = None) -> None:
+        current_sprite = self.frames[self.current_index]
+        current_sprite.blit(target, x, y, colorkey=colorkey)

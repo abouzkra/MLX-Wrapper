@@ -1,7 +1,7 @@
 [project]
 name = "mlx-wrapper"
 version = "1.0.0"
-description = "MiniLibX simple wrapper to abstract window interaction and raw data manipulation"
+description = "Simple Object-oriented wrapper around 42 school's MiniLibX"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -14,3 +14,6 @@ mlx = { path = "mlx-2.2-cp313-cp313-linux_x86_64.whl" }
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mlx_wrapper"]
