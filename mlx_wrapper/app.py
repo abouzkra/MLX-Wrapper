@@ -11,8 +11,12 @@ class MLXApp:
 		self.width = width
 		self.height = height
 
+		self.target_fps = target_fps
+		self._target_frame_time = 1.0 / target_fps if target_fps > 0 else 0.0
+
 		self._key_handlers = {}
 		self._tick = 0
+		self._last_time = time.perf_counter()
 
 		self._init_hooks()
 
@@ -43,8 +47,22 @@ class MLXApp:
 			self._key_handlers[key]()
 
 	def _internal_loop_hook(self, *args) -> None:
+		current_time = time.perf_counter()
+		elapsed = current_time - self._last_time
+
+		if self._target_frame_time > 0 and elapsed < self._target_frame_time:
+			sleep = self._target_frame_time - elapsed
+			time.sleep(sleep)
+			current_time = time.perf_counter()
+
+		dt = current_time - self._last_time
+		self._last_time = current_time
+
+		if dt > 0.1:
+			dt = 0.1
+
 		self._tick += 1
-		self.update(self._tick)
+		self.update(dt)
 
 	def update(self, dt: float) -> None:
 		pass
