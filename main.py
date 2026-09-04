@@ -68,19 +68,3 @@ class TestApp(MLXApp):
 if __name__ == "__main__":
 	app = TestApp(800, 600, "test window")
 	app.start()
-
-	# fg_img = Sprite.from_file(app.mlx, app.mlx_ptr, f'./sprites/sprite-1-1.png')
-	# bg_img = Sprite.blank(app.mlx, app.mlx_ptr, fg_img.width, fg_img.height)
-	# bg_img.fill(0xFF301010)
-
-	# fg_bytes = fg_img.pixels.view(np.uint8).reshape(fg_img.pixels.shape + (4,)).astype(np.float32)
-	# bg_bytes = bg_img.pixels.view(np.uint8).reshape(bg_img.pixels.shape + (4,)).astype(np.float32)
-
-	# f_a = fg_bytes[..., 0:1] / 255.0
-	# fg_rgb = fg_bytes[..., 1:4]
-	# bg_rgb = bg_bytes[..., 1:4]
-
-	# out_rgb = fg_rgb * f_a + bg_rgb * (1.0 - f_a)
-
-	# fg_bytes[..., 0] = 255
-	# fg_bytes[..., 1:4] = out_rgb.astype(np.uint8)
