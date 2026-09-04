@@ -1,6 +1,7 @@
 import os
 from enum import Enum, auto
 from mlx import Mlx
+import numpy as np
 
 
 class Sprite:
@@ -18,6 +19,13 @@ class Sprite:
 			self.fmt
 		) = self.mlx.mlx_get_data_addr(img_ptr)
 		self.bytes_pp = self.bpp // 8
+
+		self.pixels = np.ndarray(
+			shape=(self.height, self.width),
+			dtype=np.uint32,
+			buffer=self.data,
+			strides=(self.sl, self.bytes_pp)
+		)
 
 	@classmethod
 	def blank(cls, mlx: Mlx, mlx_ptr: int, width: int, height: int) -> "Sprite":
@@ -47,33 +55,53 @@ class Sprite:
 
 	def set_pixel(self, x: int, y: int, color: int) -> None:
 		if 0 <= x < self.width and 0 <= y < self.height:
-			offset = y * self.sl + x * self.bytes_pp
-			self.data[offset: offset + self.bytes_pp] = color.to_bytes(self.bytes_pp, 'little')
+			self.pixels[y, x] = color
 
 	def get_pixel(self, x: int, y: int) -> int:
 		if 0 <= x < self.width and 0 <= y < self.height:
-			offset = y * self.sl + x * self.bytes_pp
-			return int.from_bytes(self.data[offset: offset + self.bytes_pp], 'little') | 0xFF000000
+			return int(self.pixels[y, x] | 0xFF000000)
 		return 0
 
 	def fill(self, color: int) -> None:
-		color_bytes = color.to_bytes(self.bytes_pp, 'little')
-		for y in range(self.height):
-			row = y * self.sl
-			for x in range(self.width):
-				offset = row + x * self.bytes_pp
-				self.data[offset: offset + self.bytes_pp] = color_bytes
+		self.pixels[:] = color
 
-	def blit(self, target: "Sprite", dest_x: int, dest_y: int, colorkey: int = 0xFF000000) -> None:
-		for sy in range(self.height):
-			ty = dest_y + sy
-			if 0 <= ty < target.height:
-				for sx in range(self.width):
-					tx = dest_x + sx
-					if 0 <= tx < target.width:
-						pixel_color = self.get_pixel(sx, sy)
-						if colorkey is None or pixel_color != colorkey:
-							target.set_pixel(tx, ty, pixel_color)
+	def blit(self, target: "Sprite", dest_x: int, dest_y: int) -> None:
+		sx1, sy1 = 0, 0
+		sx2, sy2 = self.width, self.height
+		tx1, ty1 = dest_x, dest_y
+
+		if tx1 < 0:
+			sx1 -= tx1
+			tx1 = 0
+		if ty1 < 0:
+			sy1 -= ty1
+			ty1 = 0
+
+		tx2, ty2 = tx1 + sx2 - sx1, ty1 + sy2 - sy1
+		if tx2 > target.width:
+			sx2 -= tx2 - target.width
+			tx2 = target.width
+		if ty2 > target.height:
+			sy2 -= ty2 - target.height
+			ty2 = target.height
+
+		if sx1 >= sx2 or sy1 >= sy2:
+			return
+
+		s_view = self.pixels[sy1: sy2, sx1: sx2]
+		t_view = target.pixels[ty1: ty2, tx1: tx2]
+
+		fg_bytes = s_view.view(np.uint8).reshape(s_view.shape + (4,))
+		bg_bytes = t_view.view(np.uint8).reshape(t_view.shape + (4,))
+
+		f_a = fg_bytes[..., 3:4]
+		fg_rgb = fg_bytes[..., 0:3].astype(np.uint16)
+		bg_rgb = bg_bytes[..., 0:3].astype(np.uint16)
+
+		out_rgb = (fg_rgb * f_a + bg_rgb * (255 - f_a)) // 255
+
+		bg_bytes[..., 0:3] = out_rgb.astype(np.uint8)
+		bg_bytes[..., 3] = 255
 
 	def draw_to_window(self, win_ptr: int, x: int, y: int) -> None:
 		self.mlx.mlx_put_image_to_window(
@@ -152,6 +180,6 @@ class AnimatedSprite:
 					self.is_playing = False
 					self.is_finished = True
 
-	def blit(self, target: Sprite, x: int, y: int, colorkey: int = 0xFF000000) -> None:
+	def blit(self, target: Sprite, x: int, y: int) -> None:
 		current_sprite = self.frames[self.current_index]
-		current_sprite.blit(target, x, y, colorkey=colorkey)
+		current_sprite.blit(target, x, y)
