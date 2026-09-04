@@ -1,6 +1,7 @@
 import time
 from mlx import Mlx
 
+
 class MLXApp:
 	"""Simple wrapper for the 42 school's MLX library."""
 	def __init__(self, width: int, height: int, title: str, target_fps: int = 60) -> None:
@@ -18,18 +19,18 @@ class MLXApp:
 		self._tick = 0
 		self._last_time = time.perf_counter()
 
+		self.active_keys = set()
 		self._init_hooks()
 
 	def _init_hooks(self) -> None:
 		self.mlx.mlx_hook(self.win_ptr, 33, 0, self._on_close, None)
-		self.mlx.mlx_hook(self.win_ptr, 2, 1, self._internal_key_hook, None)
+		self.mlx.mlx_hook(self.win_ptr, 2, 1, self._internal_key_press, None)
+		self.mlx.mlx_hook(self.win_ptr, 3, 2, self._internal_key_release, None)
 		self.mlx.mlx_loop_hook(self.mlx_ptr, self._internal_loop_hook, None)
 
 	def start(self) -> None:
 		self.mlx.mlx_loop(self.mlx_ptr)
 
-	def _on_close(self, *args) -> None:
-		self.mlx.mlx_loop_exit(self.mlx_ptr)
 		print("destroy win")
 		self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
 		self.win_ptr = None
@@ -37,14 +38,21 @@ class MLXApp:
 		self.mlx.mlx_release(self.mlx_ptr)
 		self.mlx_ptr = None
 
+	def _on_close(self, *args) -> None:
+		self.mlx.mlx_loop_exit(self.mlx_ptr)
+
 	def bind_key(self, key: int, callback) -> None:
 		self._key_handlers[key] = callback
 
-	def _internal_key_hook(self, key: int, *args) -> None:
+	def _internal_key_press(self, key: int, *args) -> None:
+		self.active_keys.add(key)
 		if key == 65307:
 			self._on_close()
 		if key in self._key_handlers:
 			self._key_handlers[key]()
+
+	def _internal_key_release(self, key: int, *args) -> None:
+		self.active_keys.discard(key)
 
 	def _internal_loop_hook(self, *args) -> None:
 		current_time = time.perf_counter()
