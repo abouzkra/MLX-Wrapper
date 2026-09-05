@@ -29,6 +29,7 @@ class MLXApp:
 		self.mlx.mlx_loop_hook(self.mlx_ptr, self._internal_loop_hook, None)
 
 	def start(self) -> None:
+		self.mlx.mlx_do_key_autorepeatoff(self.mlx_ptr)
 		self.mlx.mlx_loop(self.mlx_ptr)
 
 		print("destroy win")
@@ -39,6 +40,7 @@ class MLXApp:
 		self.mlx_ptr = None
 
 	def _on_close(self, *args) -> None:
+		self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
 		self.mlx.mlx_loop_exit(self.mlx_ptr)
 
 	def bind_key(self, key: int, callback) -> None:
