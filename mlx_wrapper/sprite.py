@@ -59,7 +59,7 @@ class Sprite:
 
 	def get_pixel(self, x: int, y: int) -> int:
 		if 0 <= x < self.width and 0 <= y < self.height:
-			return int(self.pixels[y, x] | 0xFF000000)
+			return int(self.pixels[y, x])
 		return 0
 
 	def fill(self, color: int) -> None:

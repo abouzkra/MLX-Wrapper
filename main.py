@@ -26,7 +26,7 @@ class TestApp(MLXApp):
 				),
 			'player': Sprite.blank(self.mlx, self.mlx_ptr, 32, 32)
 		}
-		self.assets['player'].fill(0xFFFF0000)
+		self.assets['player'].fill(0xFFF0F0F0)
 
 		self.player_x = (self.width - self.assets['player'].width) // 2
 		self.player_y = (self.height - self.assets['player'].height) // 2
@@ -34,6 +34,8 @@ class TestApp(MLXApp):
 
 		self.assets['kratos'].play()
 		self.assets['iori'].play()
+
+		self.load_ttf_font("Minecraft.ttf", 32, 'S')
 
 	def update(self, dt) -> None:
 		self.player_move(dt)
@@ -45,6 +47,7 @@ class TestApp(MLXApp):
 		self.assets['kratos'].blit(self.main, 25, 25)
 		self.assets['iori'].blit(self.main, 25, 100)
 		self.assets['player'].blit(self.main, int(self.player_x), int(self.player_y))
+		self.fonts['S'].atlas.blit(self.main, 0, 0)
 
 		self.main.draw_to_window(self.win_ptr, 0, 0)
 

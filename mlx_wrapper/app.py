@@ -1,5 +1,7 @@
 import time
+from typing import Optional
 from mlx import Mlx
+from .text import Font
 
 
 class MLXApp:
@@ -11,6 +13,8 @@ class MLXApp:
 
 		self.width = width
 		self.height = height
+
+		self.fonts = {}
 
 		self.target_fps = target_fps
 		self._target_frame_time = 1.0 / target_fps if target_fps > 0 else 0.0
@@ -75,4 +79,14 @@ class MLXApp:
 		self.update(dt)
 
 	def update(self, dt: float) -> None:
+		pass
+
+	def load_ttf_font(self, font_path: str, font_size: int, key: str) -> None:
+		self.fonts[key] = Font(self.mlx, self.mlx_ptr, font_path, font_size)
+
+	def draw_text(
+		self,
+		text: str, x: int, y: int,
+		font_key: str,
+		color: int = 0xFF000000, alpha: int = 0xFF000000) -> None:
 		pass
