@@ -1,6 +1,8 @@
 import time
 from typing import Optional
 from mlx import Mlx
+import numpy as np
+from .sprite import Sprite
 from .text import Font
 
 
@@ -86,7 +88,24 @@ class MLXApp:
 
 	def draw_text(
 		self,
+		target: Sprite,
 		text: str, x: int, y: int,
 		font_key: str,
-		color: int = 0xFF000000, alpha: int = 0xFF000000) -> None:
-		pass
+		color: int = 0xFF000000
+	) -> None:
+		if not text:
+			return
+
+		font = self.fonts[font_key]
+		text_width = font.measure_text(text)
+		text_sprite = Sprite.blank(self.mlx, self.mlx_ptr, text_width, font.atlas.pixels.shape[0])
+
+		tx = 0
+		for c in text:
+			cx, cw = font[c]
+			glyph = font.atlas.pixels[:, cx: cx + cw]
+
+			text_sprite.pixels[:, tx: tx + cw] = np.where(glyph > 0, color, glyph)
+			tx = tx + font.spacing + cw
+
+		text_sprite.blit(target, x, y)

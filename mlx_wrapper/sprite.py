@@ -34,7 +34,9 @@ class Sprite:
 			raise RuntimeError(
 				f"Failed to allocate MLX image {width}x{height}"
 			)
-		return cls(mlx, mlx_ptr, img_ptr, width, height)
+		blank = cls(mlx, mlx_ptr, img_ptr, width, height)
+		blank.fill(0)
+		return blank
 
 	@classmethod
 	def from_file(cls, mlx: Mlx, mlx_ptr: int, file_path: str) -> "Sprite":
@@ -181,5 +183,4 @@ class AnimatedSprite:
 					self.is_finished = True
 
 	def blit(self, target: Sprite, x: int, y: int) -> None:
-		current_sprite = self.frames[self.current_index]
-		current_sprite.blit(target, x, y)
+		self.frames[self.current_index].blit(target, x, y)

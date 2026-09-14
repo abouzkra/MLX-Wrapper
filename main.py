@@ -38,7 +38,7 @@ class TestApp(MLXApp):
 
 		self.assets['iori'].blit(self.main, 25, 100)
 		self.assets['player'].blit(self.main, int(self.player_x), int(self.player_y))
-		self.fonts['S'].atlas.blit(self.main, 0, 0)
+		self.draw_text(self.main, "Hello !", 10, 10, 'S')
 
 		self.main.draw_to_window(self.win_ptr, 0, 0)
 
