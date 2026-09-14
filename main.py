@@ -12,12 +12,6 @@ class TestApp(MLXApp):
 		super().__init__(width, height, title)
 		self.main = Sprite.blank(self.mlx, self.mlx_ptr, width, height)
 		self.assets = {
-			'kratos': AnimatedSprite(
-					[
-						Sprite.from_file(self.mlx, self.mlx_ptr, f'./assets/kratos/sprite-1-{i}.png')
-						for i in range(1, 36)
-					]
-				),
 			'iori': AnimatedSprite(
 					[
 						Sprite.from_file(self.mlx, self.mlx_ptr, f'./assets/iori/frame_{i:02}_delay-0.1s.png')
@@ -32,19 +26,16 @@ class TestApp(MLXApp):
 		self.player_y = (self.height - self.assets['player'].height) // 2
 		self.player_speed = 300.0
 
-		self.assets['kratos'].play()
 		self.assets['iori'].play()
 
-		self.load_ttf_font("Minecraft.ttf", 32, 'S')
+		self.load_ttf_font("./assets/fonts/Minecraft.ttf", 32, 'S')
 
 	def update(self, dt) -> None:
 		self.player_move(dt)
-		self.assets['kratos'].update(dt)
 		self.assets['iori'].update(dt)
 
 		self.main.fill(0xFFB0B0B0)
 
-		self.assets['kratos'].blit(self.main, 25, 25)
 		self.assets['iori'].blit(self.main, 25, 100)
 		self.assets['player'].blit(self.main, int(self.player_x), int(self.player_y))
 		self.fonts['S'].atlas.blit(self.main, 0, 0)
