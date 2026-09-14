@@ -10,46 +10,98 @@ CHARACTERS = string.ascii_letters + string.digits + string.punctuation
 
 
 class Font(UserDict):
-	def __init__(self, mlx: Mlx, mlx_ptr: int, font_path: str, font_size: int, spacing: int = 1) -> None:
-		super().__init__()
-		self.size = font_size
-		self.spacing = spacing
+    """Representation of a font as a bitmap atlas for rendering text on the
+    MLX canvas.
 
-		font = ImageFont.truetype(font_path, font_size)
-		glyph_data = {}
-		max_w, max_h = 0, 0
+    Attributes:
+        size (int): The font size.
+        spacing (int): The spacing between characters.
+        atlas (Sprite): The sprite bitmapatlas containing the font characters.
 
-		for c in CHARACTERS:
-			bbox = font.getbbox(c)
-			w = bbox[2] - bbox[0]
-			h = bbox[3] - bbox[1]
-			offset_x = bbox[0]
+    """
 
-			max_w, max_h = max(max_w, w), max(max_h, h)
-			glyph_data[c] = (w, h, offset_x)
+    def __init__(
+        self,
+        mlx: Mlx, mlx_ptr: int,
+        font_path: str,
+        font_size: int,
+        spacing: int = 1
+    ) -> None:
+        """Initialize a Font instance with the specified parameters.
 
-		self.atlas = Sprite.blank(
-			mlx, mlx_ptr,
-			int(max_w * len(CHARACTERS)) + font_size // 3,
-			int(max_h)
-		)
+        The font is loaded from the specified path using `PIL.ImageFont
+        .truetype` and rendered as a bitmap atlas. The implementation takes
+        into account the font's bounding box and character offsets to ensure
+        accurate rendering and prevent texture bleeding.
+        At render time, the atlas is used to sample the correct pixel values
+        for each character.
 
-		for i, c in enumerate(CHARACTERS):
-			w, h, offset_x = glyph_data[c]
-			mask = font.getmask(c)
-			c_bitmap = np.array(mask).reshape(mask.size[::-1])
+        Note: The atlas contains only printable characters and is rendered
+            on a single row with dimensions:
+                width = max width of all glyphs * number of glyphs
+                height = max height of all glyphs
 
-			cx, cw = max_w * i, w
-			self.atlas.pixels[:, cx: cx + max_w] = np.pad(
-				c_bitmap,
-				((max_h - h, 0), (0, max_w - w)),
-				constant_values=0
-			)
-			self[c] = cx, cw
+        Args:
+            mlx (Mlx): MLX instance.
+            mlx_ptr (int): MLX pointer.
+            font_path (str): Path to the font file.
+            font_size (int): Font size.
+            spacing (int): Spacing between characters. Defaults to 1.
 
-		self[' '] = max_w * len(CHARACTERS), font_size // 3
+        """
+        super().__init__()
+        self.size = font_size
+        self.spacing = spacing
 
-		self.atlas.pixels[self.atlas.pixels > 0] = 0xFF000000
+        font = ImageFont.truetype(font_path, font_size)
+        glyph_data = {}
+        max_w, max_h = 0, 0
 
-	def measure_text(self, text: str) -> int:
-		return int(np.sum([self[c][1] for c in text]) + (len(text) - 1) * self.spacing)
+        for c in CHARACTERS:
+            bbox = font.getbbox(c)
+            w = int(bbox[2] - bbox[0])
+            h = int(bbox[3] - bbox[1])
+            offset_x = bbox[0]
+
+            max_w, max_h = int(max(max_w, w)), int(max(max_h, h))
+            glyph_data[c] = (w, h, offset_x)
+
+        self.atlas = Sprite.blank(
+            mlx, mlx_ptr,
+            int(max_w * len(CHARACTERS)) + font_size // 3,
+            int(max_h)
+        )
+
+        for i, c in enumerate(CHARACTERS):
+            w, h, offset_x = glyph_data[c]
+            mask = font.getmask(c)
+            c_bitmap = np.array(mask).reshape(mask.size[::-1])
+
+            cx, cw = max_w * i, w
+            self.atlas.pixels[:, cx: cx + max_w] = np.pad(
+                c_bitmap,
+                ((max_h - h, 0), (0, max_w - w)),
+                constant_values=0
+            )
+            # Store the character's position and width in the atlas
+            self[c] = cx, cw
+
+        # Space character
+        self[' '] = max_w * len(CHARACTERS), font_size // 3
+
+        self.atlas.pixels[self.atlas.pixels > 0] = 0xFF000000
+
+    def measure_text(self, text: str) -> int:
+        """Measure the width of the given text in pixels.
+
+        Args:
+            text (str): Text to measure.
+
+        Returns:
+            int: Width of the text in pixels.
+
+        """
+        return int(
+            np.sum([self[c][1] for c in text]) +
+            (len(text) - 1) * self.spacing
+        )

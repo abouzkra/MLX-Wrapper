@@ -13,8 +13,8 @@ debug:
 	uv run python -m pdb main.py
 
 lint:
-	uv run flake8 . --exclude=.venv
-	uv run mypy . --exclude .venv $(MYPY_FLAGS)
+	uv run flake8 ./mlx_wrapper
+	uv run mypy ./mlx_wrapper
 
 clean:
 	rm -rf .venv/

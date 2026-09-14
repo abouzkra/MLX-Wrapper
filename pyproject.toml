@@ -6,6 +6,8 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "mlx",
+    "flake8>=7.3.0",
+    "mypy>=2.3.1",
     "numpy>=2.5.2",
     "pillow>=12.3.0",
 ]
@@ -17,8 +19,8 @@ mlx = { path = "mlx-2.2-py3-none-any.whl" }
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.ruff.lint]
-select = ["D"]
+[tool.mypy]
+disable_error_code = ["import-untyped"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["mlx_wrapper"]
