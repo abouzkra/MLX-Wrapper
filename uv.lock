@@ -5,9 +5,9 @@ requires-python = ">=3.13"
 [[package]]
 name = "mlx"
 version = "2.2"
-source = { path = "mlx-2.2-cp313-cp313-linux_x86_64.whl" }
+source = { path = "mlx-2.2-py3-none-any.whl" }
 wheels = [
-    { filename = "mlx-2.2-cp313-cp313-linux_x86_64.whl", hash = "sha256:7a1a44b50b6295f574522ba1a1e589632c6299d193dec57c951e8fdfb3337195" },
+    { filename = "mlx-2.2-py3-none-any.whl", hash = "sha256:7a1a44b50b6295f574522ba1a1e589632c6299d193dec57c951e8fdfb3337195" },
 ]
 
 [[package]]
@@ -22,7 +22,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "mlx", path = "mlx-2.2-cp313-cp313-linux_x86_64.whl" },
+    { name = "mlx", path = "mlx-2.2-py3-none-any.whl" },
     { name = "numpy", specifier = ">=2.5.2" },
     { name = "pillow", specifier = ">=12.3.0" },
 ]
