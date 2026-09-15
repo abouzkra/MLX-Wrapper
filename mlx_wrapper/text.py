@@ -1,10 +1,11 @@
 import string
 from collections import UserDict
-from mlx import Mlx
-from .sprite import Sprite
+
 import numpy as np
+from mlx import Mlx
 from PIL import ImageFont
 
+from .sprite import Sprite
 
 CHARACTERS = string.ascii_letters + string.digits + string.punctuation
 
@@ -50,8 +51,11 @@ class Font(UserDict):
 
         """
         super().__init__()
-        self.size = font_size
-        self.spacing = spacing
+        self.mlx: Mlx = mlx
+        self.mlx_ptr: int = mlx_ptr
+        self.size: int = font_size
+        self.spacing: int = spacing
+        self.rasterized_strings: dict[str, Sprite] = {}
 
         font = ImageFont.truetype(font_path, font_size)
         glyph_data = {}
@@ -66,7 +70,7 @@ class Font(UserDict):
             max_w, max_h = int(max(max_w, w)), int(max(max_h, h))
             glyph_data[c] = (w, h, offset_x)
 
-        self.atlas = Sprite.blank(
+        self.atlas: Sprite = Sprite.blank(
             mlx, mlx_ptr,
             int(max_w * len(CHARACTERS)) + font_size // 3,
             int(max_h)
@@ -87,7 +91,7 @@ class Font(UserDict):
             self[c] = cx, cw
 
         # Space character
-        self[' '] = max_w * len(CHARACTERS), font_size // 3
+        self[" "] = max_w * len(CHARACTERS), font_size // 3
 
         self.atlas.pixels[self.atlas.pixels > 0] = 0xFF000000
 
@@ -105,3 +109,28 @@ class Font(UserDict):
             np.sum([self[c][1] for c in text]) +
             (len(text) - 1) * self.spacing
         )
+
+    def rasterize_text(self, text: str, color: int = 0xFF000000) -> None:
+        """Rasterize text into a sprite, and store it in the rasterized_strings
+        cache.
+
+        Args:
+            text (str): Text to rasterize.
+
+        """
+        text_width = self.measure_text(text)
+        text_sprite = Sprite.blank(
+            self.mlx, self.mlx_ptr, text_width, self.atlas.pixels.shape[0]
+        )
+
+        tx = 0
+        for c in text:
+            cx, cw = self[c]
+            glyph = self.atlas.pixels[:, cx: cx + cw]
+
+            text_sprite.pixels[:, tx: tx + cw] = np.where(
+                glyph > 0, color, glyph
+            )
+            tx = tx + self.spacing + cw
+
+        self.rasterized_strings[text] = text_sprite

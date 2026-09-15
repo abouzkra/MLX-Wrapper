@@ -1,0 +1,9 @@
+- Figure out a way to destroy all initialized sprites when the app exits
+- Protect destroyed sprites from being used after they are destroyed (use-after-free)
+- Modify Font.__getitem__ to return a '?' character as a fallback for missing glyphs
+- Add guard against mlx function failures
+- Should store the actual alpha value instead of overriding it from the font's character mask (mask << 24 | color)
+- bbox values aren't used properly, should align characters to a common baseline and resolve issues with characters with negative x/y offsets
+- blit should take into account the endianness of the data
+- bind_key should output a warning if the key already has a handler
+- Figure out an exception design for the wrapper

@@ -1,7 +1,6 @@
 import time
 from typing import Any, Callable
 
-import numpy as np
 from mlx import Mlx
 
 from .sprite import Sprite
@@ -193,8 +192,7 @@ class MLXApp:
         self,
         target: Sprite,
         text: str,
-        x: int,
-        y: int,
+        x: int, y: int,
         font_key: str,
         color: int = 0xFF000000,
     ) -> None:
@@ -212,20 +210,12 @@ class MLXApp:
         if not text:
             return
 
+        if font_key not in self.fonts:
+            return
+
         font = self.fonts[font_key]
-        text_width = font.measure_text(text)
-        text_sprite = Sprite.blank(
-            self.mlx, self.mlx_ptr, text_width, font.atlas.pixels.shape[0]
-        )
-
-        tx = 0
-        for c in text:
-            cx, cw = font[c]
-            glyph = font.atlas.pixels[:, cx: cx + cw]
-
-            text_sprite.pixels[:, tx: tx + cw] = np.where(
-                glyph > 0, color, glyph
-            )
-            tx = tx + font.spacing + cw
+        if text not in font.rasterized_strings:
+            font.rasterize_text(text, color)
+        text_sprite = font.rasterized_strings[text]
 
         text_sprite.blit(target, x, y)

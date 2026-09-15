@@ -18,17 +18,16 @@ class Sprite:
         img_ptr (int): MLX image pointer.
         width (int): Width of the sprite.
         height (int): Height of the sprite.
-        data (memoryview): C-contiguous memory view of the sprite data.
-        bbp (int): Bits per pixel.
-        sl (int): Line length in bytes.
         fmt (int): Endianness of the data.
-        bytes_pp (int): Bytes per pixel.
         pixels (np.ndarray): 2d array representing the sprite pixels.
 
     """
 
     def __init__(
-        self, mlx: Mlx, mlx_ptr: int, img_ptr: int, width: int, height: int
+        self,
+        mlx: Mlx, mlx_ptr: int,
+        img_ptr: int,
+        width: int, height: int
     ) -> None:
         """Initialize a Sprite instance with the given MLX image
         pointer and dimensions.
@@ -47,24 +46,19 @@ class Sprite:
         self.width: int = width
         self.height: int = height
 
-        self.data: memoryview
-        self.bpp: int
-        self.sl: int
-        self.fmt: int
-
         (
-            self.data,
-            self.bpp,
-            self.sl,
-            self.fmt,
+            data,
+            bpp,
+            sl,
+            fmt,
         ) = self.mlx.mlx_get_data_addr(img_ptr)
-        self.bytes_pp: int = self.bpp // 8
+        self.fmt: int = fmt
 
         self.pixels: np.ndarray = np.ndarray(
             shape=(self.height, self.width),
             dtype=np.uint32,
-            buffer=self.data,
-            strides=(self.sl, self.bytes_pp),
+            buffer=data,
+            strides=(sl, bpp // 8),
         )
 
     @classmethod
@@ -259,9 +253,18 @@ class AnimatedSprite:
     def __init__(
         self,
         frames: list[Sprite],
-        fps: float = 12.0,
+        fps: int = 12,
         loop_mode: LoopMode = LoopMode.LOOP,
     ) -> None:
+        """Initialize an animated sprite with the given frames, frames per
+        second, and loop mode.
+
+        Args:
+            frames (list[Sprite]): List of frames for the animation.
+            fps (int): Frames per second.
+            loop_mode (LoopMode): Loop mode for the animation. Defaults to
+                LoopMode.LOOP.
+        """
         if not frames:
             raise ValueError("AnimatedSprite needs at least one frame.")
 
