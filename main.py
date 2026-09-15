@@ -63,6 +63,11 @@ class TestApp(MLXApp):
                 self.player_y + self.player_speed * dt,
             )
 
+    def on_cleanup(self) -> None:
+        self.assets["iori"].destroy()
+        self.assets["player"].destroy()
+        self.main.destroy()
+
 
 if __name__ == "__main__":
     app = TestApp(800, 600, "test window")

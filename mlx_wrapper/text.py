@@ -134,3 +134,11 @@ class Font(UserDict):
             tx = tx + self.spacing + cw
 
         self.rasterized_strings[text] = text_sprite
+
+    def destroy(self) -> None:
+        """Destroy the font, freeing its resources."""
+
+        self.atlas.destroy()
+        self.atlas.mlx_ptr = 0
+        self.clear()
+        self.rasterized_strings.clear()

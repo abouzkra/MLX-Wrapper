@@ -37,9 +37,13 @@ class MLXApp:
         """
         self.mlx: Mlx = Mlx()
         self.mlx_ptr: int = self.mlx.mlx_init()
+        if self.mlx_ptr == 0:
+            raise RuntimeError("Failed to initialize MLX")
         self.win_ptr: int = self.mlx.mlx_new_window(
             self.mlx_ptr, width, height, title
         )
+        if self.win_ptr == 0:
+            raise RuntimeError("Failed to create window")
 
         self.width: int = width
         self.height: int = height
@@ -75,15 +79,11 @@ class MLXApp:
 
         It disables X11 key autorepeat and starts the MLX loop.
         """
-        self.mlx.mlx_do_key_autorepeatoff(self.mlx_ptr)
-        self.mlx.mlx_loop(self.mlx_ptr)
-
-        print("destroy win")
-        self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
-        self.win_ptr = 0
-        print("destroy mlx")
-        self.mlx.mlx_release(self.mlx_ptr)
-        self.mlx_ptr = 0
+        try:
+            self.mlx.mlx_do_key_autorepeatoff(self.mlx_ptr)
+            self.mlx.mlx_loop(self.mlx_ptr)
+        finally:
+            self._shutdown()
 
     def _on_close(self, *args: Any) -> None:
         """Close event handler.
@@ -94,8 +94,13 @@ class MLXApp:
             *args: Variable length argument list.
 
         """
-        self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
-        self.mlx.mlx_loop_exit(self.mlx_ptr)
+        res = self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
+        if res != 0:
+            raise RuntimeError("Failed to enable X11 key autorepeat")
+        res = self.mlx.mlx_loop_exit(self.mlx_ptr)
+        if res != 0:
+            raise RuntimeError("Failed to exit X11 loop")
+        print("Mlx loop exit")
 
     def bind_key(self, key: int, callback: Callable[[], None]) -> None:
         """Bind a key to a callback function.
@@ -158,8 +163,7 @@ class MLXApp:
         dt = current_time - self._last_time
         self._last_time = current_time
 
-        if dt > 0.1:
-            dt = 0.1
+        dt = min(dt, 0.1)
 
         self._tick += 1
         self.update(dt)
@@ -173,6 +177,49 @@ class MLXApp:
         Args:
             dt (float): Time elapsed since the last update.
 
+        """
+        pass
+
+    def _shutdown(self) -> None:
+        """Shutdown The MLX app.
+
+        Cleans up resources (fonts, additional cleanup, window) and releses the
+        MLX pointer.
+        """
+        self._cleanup()
+        print("destroy win")
+        res = self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
+        if res != 0:
+            raise RuntimeError("Failed to destroy window")
+        self.win_ptr = 0
+
+        print("destroy mlx")
+        self.mlx.mlx_release(self.mlx_ptr)
+        if res != 0:
+            raise RuntimeError("Failed to release mlx_ptr")
+        self.mlx_ptr = 0
+
+    def _cleanup(self) -> None:
+        """Cleanup function.
+
+        Destroys all font atlases and clears the fonts dictionary.
+        Should be overridden by subclasses to perform additional cleanup.
+        """
+
+        try:
+            self.on_cleanup()
+        except Exception as e:
+            print(f"Error during custom cleanup: {e}")
+
+        for f in self.fonts.values():
+            f.destroy()
+
+        self.fonts.clear()
+
+    def on_cleanup(self) -> None:
+        """Hook for additional cleanup.
+
+        Should be overridden by sublcasses to perform additional cleanup.
         """
         pass
 

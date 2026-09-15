@@ -344,3 +344,11 @@ class AnimatedSprite:
 
         """
         self.frames[self.current_index].blit(target, x, y)
+
+    def destroy(self) -> None:
+        """Destroy the animated sprite, freeing its resources."""
+
+        for f in self.frames:
+            f.destroy()
+            f.mlx_ptr = 0
+        self.frames = []
