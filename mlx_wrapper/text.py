@@ -7,7 +7,7 @@ from PIL import ImageFont
 
 from .sprite import Sprite
 
-CHARACTERS = string.ascii_letters + string.digits + string.punctuation
+CHARACTERS = string.ascii_letters + string.digits + string.punctuation + "▯"
 
 
 class Font(UserDict):
@@ -93,7 +93,20 @@ class Font(UserDict):
         # Space character
         self[" "] = max_w * len(CHARACTERS), font_size // 3
 
-        self.atlas.pixels[self.atlas.pixels > 0] = 0xFF000000
+        self.atlas.pixels = self.atlas.pixels << 24
+
+    def __getitem__(self, key: str) -> tuple[int, int]:
+        """Return the position and width of the character in the atlas.
+
+        Args:
+            key (str): Character to look up.
+
+        Returns:
+            tuple[int, int]: Position and width of the character in the atlas.
+        """
+        if key not in self:
+            return self.data['▯']
+        return self.data[key]
 
     def measure_text(self, text: str) -> int:
         """Measure the width of the given text in pixels.
@@ -128,9 +141,7 @@ class Font(UserDict):
             cx, cw = self[c]
             glyph = self.atlas.pixels[:, cx: cx + cw]
 
-            text_sprite.pixels[:, tx: tx + cw] = np.where(
-                glyph > 0, color, glyph
-            )
+            text_sprite.pixels[:, tx: tx + cw] = glyph | (color & 0x00FFFFFF)
             tx = tx + self.spacing + cw
 
         self.rasterized_strings[text] = text_sprite

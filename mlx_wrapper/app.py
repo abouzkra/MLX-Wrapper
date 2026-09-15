@@ -110,6 +110,8 @@ class MLXApp:
             callback: Function to call when the key is pressed.
 
         """
+        if key in self._key_handlers:
+            print(f"Warning: key {key} already has a handler")
         self._key_handlers[key] = callback
 
     def _internal_key_press(self, key: int, *args: Any) -> None:

@@ -43,7 +43,7 @@ class TestApp(MLXApp):
         self.assets["player"].blit(
             self.main, int(self.player_x), int(self.player_y)
         )
-        self.draw_text(self.main, "Hello !", 10, 10, "S")
+        self.draw_text(self.main, "Hello ! é  É", 10, 10, "S")
 
         self.main.draw_to_window(self.win_ptr, 0, 0)
 
