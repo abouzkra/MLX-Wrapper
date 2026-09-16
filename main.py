@@ -1,5 +1,4 @@
 from mlx_wrapper import AnimatedSprite, MLXApp, Sprite
-import string
 
 KEY_LEFT = 0xFF51
 KEY_UP = 0xFF52
@@ -8,8 +7,10 @@ KEY_DOWN = 0xFF54
 
 
 class TestApp(MLXApp):
-    def __init__(self, width: int, height: int, title: str) -> None:
-        super().__init__(width, height, title)
+    def __init__(
+        self, width: int, height: int, title: str, target_fps: int = 60
+    ) -> None:
+        super().__init__(width, height, title, target_fps=target_fps)
         self.main = Sprite.blank(self.mlx, self.mlx_ptr, width, height)
         self.assets = {
             "iori": AnimatedSprite(
@@ -44,7 +45,7 @@ class TestApp(MLXApp):
         self.assets["player"].blit(
             self.main, int(self.player_x), int(self.player_y)
         )
-        self.draw_text(self.main, 'ap', 10, 10, "S")
+        self.draw_text(self.main, "ap", 10, 10, "S")
 
         self.main.draw_to_window(self.win_ptr, 0, 0)
 

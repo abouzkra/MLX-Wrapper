@@ -4,7 +4,6 @@
 - bind_key should output a warning if the key already has a handler (DONE)
 - Should store the actual alpha value instead of overriding it from the font's character mask (mask << 24 | color) (DONE)
 - bbox values aren't used properly, should align characters to a common baseline and resolve issues with characters with negative x/y offsets (DONE)
-- Protect destroyed sprites from being used after they are destroyed (use-after-free)
-- blit should take into account the endianness of the data
+- Sprite should take into account the endianness of the data (DONE)
+- Protect destroyed sprites from being used after they are destroyed (use-after-free) (DONE)
 - Figure out an exception design for the wrapper
-- Implement an AssetManager for loading and managing assets

@@ -52,11 +52,10 @@ class Sprite:
             sl,
             fmt,
         ) = self.mlx.mlx_get_data_addr(img_ptr)
-        self.fmt: int = fmt
 
         self.pixels: np.ndarray = np.ndarray(
             shape=(self.height, self.width),
-            dtype=np.uint32,
+            dtype='<u4' if fmt == 0 else '>u4',
             buffer=data,
             strides=(sl, bpp // 8),
         )
@@ -217,6 +216,7 @@ class Sprite:
         if self.img_ptr:
             self.mlx.mlx_destroy_image(self.mlx_ptr, self.img_ptr)
             self.img_ptr = 0
+            self.pixels = np.empty((0, 0), dtype=np.uint32)
 
 
 class LoopMode(Enum):

@@ -50,6 +50,9 @@ class MLXApp:
 
         self.fonts: dict[str, Font] = {}
 
+        # NOTE: although the user can specify a value higher than 60,
+        # the actual frame rate is capped at the screen's refresh rate because
+        # the mlx backend enforces V-sync
         self.target_fps: int = target_fps
         # Target frame time in seconds.
         self._target_frame_time: float = 0.0
@@ -158,14 +161,13 @@ class MLXApp:
         elapsed = current_time - self._last_time
 
         if self._target_frame_time > 0 and elapsed < self._target_frame_time:
-            sleep = self._target_frame_time - elapsed
-            time.sleep(sleep)
+            time.sleep(self._target_frame_time - elapsed)
             current_time = time.perf_counter()
+            elapsed = current_time - self._last_time
 
-        dt = current_time - self._last_time
         self._last_time = current_time
 
-        dt = min(dt, 0.1)
+        dt = min(elapsed, 0.0333)
 
         self._tick += 1
         self.update(dt)

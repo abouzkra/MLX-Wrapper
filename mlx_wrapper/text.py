@@ -84,8 +84,8 @@ class Font(UserDict):
             # Character position and width in the bitmap atlas
             cx, cw = max_w * i, w
             # Pad the character bitmap to fit in the atlas
-            pad_top = max(0, offset_y)
-            pad_bottom = max(0, max_h - offset_y - h)
+            pad_top = int(max(0, offset_y))
+            pad_bottom = int(max(0, max_h - offset_y - h))
             self.atlas.pixels[:, cx: cx + max_w] = np.pad(
                 c_bitmap,
                 ((pad_top, pad_bottom), (0, max_w - w)),
