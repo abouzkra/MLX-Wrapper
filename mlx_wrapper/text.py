@@ -65,10 +65,10 @@ class Font(UserDict):
             bbox = font.getbbox(c)
             w = int(bbox[2] - bbox[0])
             h = int(bbox[3] - bbox[1])
-            offset_x = bbox[0]
+            offset_y = bbox[1]
 
-            max_w, max_h = int(max(max_w, w)), int(max(max_h, h))
-            glyph_data[c] = (w, h, offset_x)
+            max_w, max_h = int(max(max_w, w)), int(max(max_h, h + offset_y))
+            glyph_data[c] = (w, h, offset_y)
 
         self.atlas: Sprite = Sprite.blank(
             mlx, mlx_ptr,
@@ -77,14 +77,18 @@ class Font(UserDict):
         )
 
         for i, c in enumerate(CHARACTERS):
-            w, h, offset_x = glyph_data[c]
+            w, h, offset_y = glyph_data[c]
             mask = font.getmask(c)
             c_bitmap = np.array(mask).reshape(mask.size[::-1])
 
+            # Character position and width in the bitmap atlas
             cx, cw = max_w * i, w
+            # Pad the character bitmap to fit in the atlas
+            pad_top = max(0, offset_y)
+            pad_bottom = max(0, max_h - offset_y - h)
             self.atlas.pixels[:, cx: cx + max_w] = np.pad(
                 c_bitmap,
-                ((max_h - h, 0), (0, max_w - w)),
+                ((pad_top, pad_bottom), (0, max_w - w)),
                 constant_values=0
             )
             # Store the character's position and width in the atlas

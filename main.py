@@ -1,4 +1,5 @@
 from mlx_wrapper import AnimatedSprite, MLXApp, Sprite
+import string
 
 KEY_LEFT = 0xFF51
 KEY_UP = 0xFF52
@@ -43,7 +44,7 @@ class TestApp(MLXApp):
         self.assets["player"].blit(
             self.main, int(self.player_x), int(self.player_y)
         )
-        self.draw_text(self.main, "Hello ! é  É", 10, 10, "S")
+        self.draw_text(self.main, 'ap', 10, 10, "S")
 
         self.main.draw_to_window(self.win_ptr, 0, 0)
 
@@ -70,5 +71,5 @@ class TestApp(MLXApp):
 
 
 if __name__ == "__main__":
-    app = TestApp(800, 600, "test window")
+    app = TestApp(1200, 800, "test window")
     app.start()
