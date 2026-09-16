@@ -181,10 +181,10 @@ wheels = [
 
 [[package]]
 name = "mlx"
-version = "2.2"
-source = { path = "mlx-2.2-py3-none-any.whl" }
+version = "2.4"
+source = { path = "mlx-2.4-py3-none-any.whl" }
 wheels = [
-    { filename = "mlx-2.2-py3-none-any.whl", hash = "sha256:7a1a44b50b6295f574522ba1a1e589632c6299d193dec57c951e8fdfb3337195" },
+    { filename = "mlx-2.4-py3-none-any.whl", hash = "sha256:6cfb04a027e80875f68caf87b221e9d4e5b9366ad971c788706c96cc928cad27" },
 ]
 
 [[package]]
@@ -202,7 +202,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "flake8", specifier = ">=7.3.0" },
-    { name = "mlx", path = "mlx-2.2-py3-none-any.whl" },
+    { name = "mlx", path = "mlx-2.4-py3-none-any.whl" },
     { name = "mypy", specifier = ">=2.3.1" },
     { name = "numpy", specifier = ">=2.5.2" },
     { name = "pillow", specifier = ">=12.3.0" },

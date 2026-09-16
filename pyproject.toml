@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-mlx = { path = "mlx-2.2-py3-none-any.whl" }
+mlx = { path = "mlx-2.4-py3-none-any.whl" }
 
 [build-system]
 requires = ["hatchling"]
