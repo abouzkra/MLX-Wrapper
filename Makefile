@@ -14,7 +14,7 @@ debug:
 
 lint:
 	uv run flake8 ./mlx_wrapper
-	uv run mypy ./mlx_wrapper
+	uv run mypy $(MYPY_FLAGS) ./mlx_wrapper
 
 clean:
 	rm -rf .venv/
