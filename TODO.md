@@ -6,4 +6,4 @@
 - bbox values aren't used properly, should align characters to a common baseline and resolve issues with characters with negative x/y offsets (DONE)
 - Sprite should take into account the endianness of the data (DONE)
 - Protect destroyed sprites from being used after they are destroyed (use-after-free) (DONE)
-- Figure out an exception design for the wrapper
+- Figure out an exception design for the wrapper (DONE)

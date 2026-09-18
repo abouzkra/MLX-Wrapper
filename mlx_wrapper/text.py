@@ -106,7 +106,7 @@ class Font(Asset, UserDict):
         except (ValueError, IndexError) as e:
             raise FontLoadError(
                 "Couldn't create font atlas: ", e
-            )
+            ) from e
 
     def __getitem__(self, key: str) -> tuple[int, int]:
         """Return the position and width of the character in the atlas.
@@ -162,7 +162,7 @@ class Font(Asset, UserDict):
         except (ValueError, IndexError) as e:
             raise FontLoadError(
                 f"Couldn't rasterize text {text}: ", e
-            )
+            ) from e
 
         self.rasterized_strings[text] = text_sprite
 

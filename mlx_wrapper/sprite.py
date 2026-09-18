@@ -150,7 +150,7 @@ class Sprite(Asset):
 
         """
         if 0 <= x < self.width and 0 <= y < self.height:
-            self.pixels[y, x] = color
+            self.pixels[y, x] = color & 0xFFFFFFFF
 
     def get_pixel(self, x: int, y: int) -> int:
         """Get the color of the pixel at (x, y).
@@ -174,6 +174,7 @@ class Sprite(Asset):
             color (int): Color value to fill.
 
         """
+        color &= 0xFFFFFFFF
         self.pixels[:] = color
 
     def blit(self, target: "Sprite", dest_x: int, dest_y: int) -> None:
@@ -229,7 +230,7 @@ class Sprite(Asset):
             raise RenderingError(
                 f"blit failed: src={self.width}x{self.height} "
                 f"on target={target} at dest={(dest_x, dest_y)}"
-            )
+            ) from e
 
     def draw_to_window(self, win_ptr: int, x: int, y: int) -> None:
         """Draw to the window at (x, y).
