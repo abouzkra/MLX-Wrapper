@@ -2,6 +2,7 @@ import time
 from typing import Any, Callable
 
 from mlx import Mlx
+from mlx_wrapper.exceptions import NativeCallError
 
 from .sprite import Sprite
 from .text import Font
@@ -38,12 +39,12 @@ class MLXApp:
         self.mlx: Mlx = Mlx()
         self.mlx_ptr: int = self.mlx.mlx_init()
         if self.mlx_ptr == 0:
-            raise RuntimeError("Failed to initialize MLX")
+            raise NativeCallError("mlx_init failed to initialize MLX")
         self.win_ptr: int = self.mlx.mlx_new_window(
             self.mlx_ptr, width, height, title
         )
         if self.win_ptr == 0:
-            raise RuntimeError("Failed to create window")
+            raise NativeCallError("mlx_new_window failed to create window")
 
         self.width: int = width
         self.height: int = height
@@ -97,12 +98,8 @@ class MLXApp:
             *args: Variable length argument list.
 
         """
-        res = self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
-        if res != 0:
-            raise RuntimeError("Failed to enable X11 key autorepeat")
-        res = self.mlx.mlx_loop_exit(self.mlx_ptr)
-        if res != 0:
-            raise RuntimeError("Failed to exit X11 loop")
+        self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
+        self.mlx.mlx_loop_exit(self.mlx_ptr)
         print("Mlx loop exit")
 
     def bind_key(self, key: int, callback: Callable[[], None]) -> None:
@@ -192,15 +189,11 @@ class MLXApp:
         """
         self._cleanup()
         print("destroy win")
-        res = self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
-        if res != 0:
-            raise RuntimeError("Failed to destroy window")
+        self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
         self.win_ptr = 0
 
         print("destroy mlx")
         self.mlx.mlx_release(self.mlx_ptr)
-        if res != 0:
-            raise RuntimeError("Failed to release mlx_ptr")
         self.mlx_ptr = 0
 
     def _cleanup(self) -> None:
@@ -210,15 +203,10 @@ class MLXApp:
         Should be overridden by subclasses to perform additional cleanup.
         """
 
-        try:
-            self.on_cleanup()
-        except Exception as e:
-            print(f"Error during custom cleanup: {e}")
+        self.on_cleanup()
 
         for f in self.fonts.values():
             f.destroy()
-
-        self.fonts.clear()
 
     def on_cleanup(self) -> None:
         """Hook for additional cleanup.

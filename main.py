@@ -1,4 +1,5 @@
 from mlx_wrapper import AnimatedSprite, MLXApp, Sprite
+from mlx_wrapper.exceptions import MLXError
 
 KEY_LEFT = 0xFF51
 KEY_UP = 0xFF52
@@ -72,5 +73,8 @@ class TestApp(MLXApp):
 
 
 if __name__ == "__main__":
-    app = TestApp(1200, 800, "test window")
-    app.start()
+    try:
+        app = TestApp(1200, 800, "test window")
+        app.start()
+    except MLXError as e:
+        print(f"Error: {e}")

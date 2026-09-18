@@ -1,16 +1,17 @@
 import string
 from collections import UserDict
 
+from mlx_wrapper.exceptions import AssetError, FontLoadError, RenderingError
 import numpy as np
 from mlx import Mlx
 from PIL import ImageFont
 
-from .sprite import Sprite
+from .sprite import Asset, Sprite
 
 CHARACTERS = string.ascii_letters + string.digits + string.punctuation + "▯"
 
 
-class Font(UserDict):
+class Font(Asset, UserDict):
     """Representation of a font as a bitmap atlas for rendering text on the
     MLX canvas.
 
@@ -50,14 +51,17 @@ class Font(UserDict):
             spacing (int): Spacing between characters. Defaults to 1.
 
         """
-        super().__init__()
+        UserDict.__init__(self)
         self.mlx: Mlx = mlx
         self.mlx_ptr: int = mlx_ptr
         self.size: int = font_size
         self.spacing: int = spacing
         self.rasterized_strings: dict[str, Sprite] = {}
 
-        font = ImageFont.truetype(font_path, font_size)
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+        except OSError as e:
+            raise FontLoadError(f"Could not load font ({e})")
         glyph_data = {}
         max_w, max_h = 0, 0
 
@@ -76,28 +80,33 @@ class Font(UserDict):
             int(max_h)
         )
 
-        for i, c in enumerate(CHARACTERS):
-            w, h, offset_y = glyph_data[c]
-            mask = font.getmask(c)
-            c_bitmap = np.array(mask).reshape(mask.size[::-1])
+        try:
+            for i, c in enumerate(CHARACTERS):
+                w, h, offset_y = glyph_data[c]
+                mask = font.getmask(c)
+                c_bitmap = np.array(mask).reshape(mask.size[::-1])
 
-            # Character position and width in the bitmap atlas
-            cx, cw = max_w * i, w
-            # Pad the character bitmap to fit in the atlas
-            pad_top = int(max(0, offset_y))
-            pad_bottom = int(max(0, max_h - offset_y - h))
-            self.atlas.pixels[:, cx: cx + max_w] = np.pad(
-                c_bitmap,
-                ((pad_top, pad_bottom), (0, max_w - w)),
-                constant_values=0
+                # Character position and width in the bitmap atlas
+                cx, cw = max_w * i, w
+                # Pad the character bitmap to fit in the atlas
+                pad_top = int(max(0, offset_y))
+                pad_bottom = int(max(0, max_h - offset_y - h))
+                self.atlas.pixels[:, cx: cx + max_w] = np.pad(
+                    c_bitmap,
+                    ((pad_top, pad_bottom), (0, max_w - w)),
+                    constant_values=0
+                )
+                # Store the character's position and width in the atlas
+                self[c] = cx, cw
+
+            # Space character
+            self[" "] = max_w * len(CHARACTERS), font_size // 3
+
+            self.atlas.pixels = self.atlas.pixels << 24
+        except (ValueError, IndexError) as e:
+            raise FontLoadError(
+                "Couldn't create font atlas: ", e
             )
-            # Store the character's position and width in the atlas
-            self[c] = cx, cw
-
-        # Space character
-        self[" "] = max_w * len(CHARACTERS), font_size // 3
-
-        self.atlas.pixels = self.atlas.pixels << 24
 
     def __getitem__(self, key: str) -> tuple[int, int]:
         """Return the position and width of the character in the atlas.
@@ -135,25 +144,29 @@ class Font(UserDict):
             text (str): Text to rasterize.
 
         """
+        if not text:
+            raise RenderingError("Cannot render empty string")
         text_width = self.measure_text(text)
         text_sprite = Sprite.blank(
             self.mlx, self.mlx_ptr, text_width, self.atlas.pixels.shape[0]
         )
 
-        tx = 0
-        for c in text:
-            cx, cw = self[c]
-            glyph = self.atlas.pixels[:, cx: cx + cw]
+        try:
+            tx = 0
+            for c in text:
+                cx, cw = self[c]
+                glyph = self.atlas.pixels[:, cx: cx + cw]
 
-            text_sprite.pixels[:, tx: tx + cw] = glyph | (color & 0x00FFFFFF)
-            tx = tx + self.spacing + cw
+                text_sprite.pixels[:, tx: tx + cw] = glyph | (color & 0x00FFFFFF)
+                tx = tx + self.spacing + cw
+        except (ValueError, IndexError) as e:
+            raise FontLoadError(
+                f"Couldn't rasterize text {text}: ", e
+            )
 
         self.rasterized_strings[text] = text_sprite
 
-    def destroy(self) -> None:
+    def _custom_destroy(self) -> None:
         """Destroy the font, freeing its resources."""
 
         self.atlas.destroy()
-        self.atlas.mlx_ptr = 0
-        self.clear()
-        self.rasterized_strings.clear()
