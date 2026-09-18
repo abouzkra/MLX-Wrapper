@@ -2,10 +2,10 @@ import time
 from typing import Any, Callable
 
 from mlx import Mlx
-from mlx_wrapper.exceptions import NativeCallError
 
-from .sprite import Sprite
-from .text import Font
+from .asset.font import Font
+from .asset.sprite import Sprite
+from .exceptions import NativeCallError
 
 
 class MLXApp:

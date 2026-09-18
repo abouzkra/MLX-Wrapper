@@ -1,12 +1,14 @@
 import string
 from collections import UserDict
 
-from mlx_wrapper.exceptions import AssetError, FontLoadError, RenderingError
 import numpy as np
 from mlx import Mlx
 from PIL import ImageFont
 
-from .sprite import Asset, Sprite
+from mlx_wrapper.exceptions import FontLoadError, RenderingError
+
+from .base import Asset
+from .sprite import Sprite
 
 CHARACTERS = string.ascii_letters + string.digits + string.punctuation + "▯"
 
@@ -25,8 +27,7 @@ class Font(Asset, UserDict):
     def __init__(
         self,
         mlx: Mlx, mlx_ptr: int,
-        font_path: str,
-        font_size: int,
+        font_path: str, font_size: int,
         spacing: int = 1
     ) -> None:
         """Initialize a Font instance with the specified parameters.
@@ -75,9 +76,8 @@ class Font(Asset, UserDict):
             glyph_data[c] = (w, h, offset_y)
 
         self.atlas: Sprite = Sprite.blank(
-            mlx, mlx_ptr,
-            int(max_w * len(CHARACTERS)) + font_size // 3,
-            int(max_h)
+            mlx, mlx_ptr, int(max_w * len(CHARACTERS)) +
+            font_size // 3, int(max_h)
         )
 
         try:
@@ -104,9 +104,7 @@ class Font(Asset, UserDict):
 
             self.atlas.pixels = self.atlas.pixels << 24
         except (ValueError, IndexError) as e:
-            raise FontLoadError(
-                "Couldn't create font atlas: ", e
-            ) from e
+            raise FontLoadError("Couldn't create font atlas: ", e) from e
 
     def __getitem__(self, key: str) -> tuple[int, int]:
         """Return the position and width of the character in the atlas.
@@ -118,7 +116,7 @@ class Font(Asset, UserDict):
             tuple[int, int]: Position and width of the character in the atlas.
         """
         if key not in self:
-            return self.data['▯']
+            return self.data["▯"]
         return self.data[key]
 
     def measure_text(self, text: str) -> int:
@@ -132,8 +130,7 @@ class Font(Asset, UserDict):
 
         """
         return int(
-            np.sum([self[c][1] for c in text]) +
-            (len(text) - 1) * self.spacing
+            np.sum([self[c][1] for c in text]) + (len(text) - 1) * self.spacing
         )
 
     def rasterize_text(self, text: str, color: int = 0xFF000000) -> None:
@@ -157,12 +154,11 @@ class Font(Asset, UserDict):
                 cx, cw = self[c]
                 glyph = self.atlas.pixels[:, cx: cx + cw]
 
-                text_sprite.pixels[:, tx: tx + cw] = glyph | (color & 0x00FFFFFF)
+                text_sprite.pixels[:, tx: tx + cw] = glyph |\
+                    (color & 0x00FFFFFF)
                 tx = tx + self.spacing + cw
         except (ValueError, IndexError) as e:
-            raise FontLoadError(
-                f"Couldn't rasterize text {text}: ", e
-            ) from e
+            raise FontLoadError(f"Couldn't rasterize text {text}: ", e) from e
 
         self.rasterized_strings[text] = text_sprite
 
