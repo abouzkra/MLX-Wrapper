@@ -1,5 +1,6 @@
 import string
 from collections import UserDict
+from typing import Any
 
 import numpy as np
 from mlx import Mlx
@@ -106,7 +107,7 @@ class Font(Asset, UserDict):
         except (ValueError, IndexError) as e:
             raise FontLoadError("Couldn't create font atlas: ", e) from e
 
-    def __getitem__(self, key: str) -> tuple[int, int]:
+    def __getitem__(self, key: str) -> Any:
         """Return the position and width of the character in the atlas.
 
         Args:
