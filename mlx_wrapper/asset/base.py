@@ -43,8 +43,11 @@ class Asset(ABC):
             DestroyedResourceError: If a destroyed asset's attribute has been
                 used.
         """
-        if self._destroyed:
+        if self.__dict__.get("_destroyed", False):
             raise DestroyedResourceError(
                 f"Tried to access '{name}' on destroyed "
                 f"{self.__class__.__name__}"
             )
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
