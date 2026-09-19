@@ -103,7 +103,7 @@ class Sprite(Asset):
             Sprite: The loaded sprite.
 
         """
-        ext = os.path.splitext(file_path)[1]
+        ext = os.path.splitext(file_path)[1].lower()
 
         match ext:
             case ".png":
@@ -198,14 +198,17 @@ class Sprite(Asset):
             fg_bytes = s_view.view(np.uint8).reshape(s_view.shape + (4,))
             bg_bytes = t_view.view(np.uint8).reshape(t_view.shape + (4,))
 
-            f_a = fg_bytes[..., 3:4]
+            f_a = fg_bytes[..., 3:4].astype(np.uint16)
+            t_a = bg_bytes[..., 3:4].astype(np.uint16)
             fg_rgb = fg_bytes[..., 0:3].astype(np.uint16)
             bg_rgb = bg_bytes[..., 0:3].astype(np.uint16)
 
-            out_rgb = (fg_rgb * f_a + bg_rgb * (255 - f_a)) // 255
+            comp_a = 255 - f_a
+            out_rgb = (fg_rgb * f_a + bg_rgb * comp_a) // 255
+            out_a = f_a + t_a * comp_a // 255
 
             bg_bytes[..., 0:3] = out_rgb.astype(np.uint8)
-            bg_bytes[..., 3] = 255
+            bg_bytes[..., 3:4] = out_a.astype(np.uint8)
         except (ValueError, IndexError) as e:
             raise RenderingError(
                 f"blit failed: src={self.width}x{self.height} "
