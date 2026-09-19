@@ -98,7 +98,6 @@ class MLXApp:
             *args: Variable length argument list.
 
         """
-        self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
         self.mlx.mlx_loop_exit(self.mlx_ptr)
         print("Mlx loop exit")
 
@@ -187,6 +186,7 @@ class MLXApp:
         Cleans up resources (fonts, additional cleanup, window) and releses the
         MLX pointer.
         """
+        self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
         self._cleanup()
         print("destroy win")
         self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
@@ -234,6 +234,7 @@ class MLXApp:
         x: int, y: int,
         font_key: str,
         color: int = 0xFF000000,
+        cache: bool = True
     ) -> None:
         """Draw text on the target sprite using the specified font and color.
 
@@ -243,7 +244,9 @@ class MLXApp:
             x (int): X position of the text.
             y (int): Y position of the text.
             font_key (str): Key of the font to use.
-            color (int, optional): Color of the text. Defaults to 0xFF000000.
+            color (int): Color of the text. Defaults to 0xFF000000.
+            cache (bool): Whether to cache the rasterized text.
+                Defaults to True.
 
         """
         if not text:
@@ -254,7 +257,7 @@ class MLXApp:
 
         font = self.fonts[font_key]
         if text not in font.rasterized_strings:
-            font.rasterize_text(text, color)
-        text_sprite = font.rasterized_strings[text]
+            font.rasterize_text(text, color, cache)
+        text_sprite = font.rasterized_strings[(text, color)]
 
         text_sprite.blit(target, x, y)
