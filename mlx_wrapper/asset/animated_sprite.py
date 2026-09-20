@@ -54,13 +54,11 @@ class AnimatedSprite(Asset):
         if not frames:
             raise AssetError("AnimatedSprite needs at least one frame.")
 
-        if len(frames) == 1:
-            loop_mode = LoopMode.ONCE
-
         if fps <= 0:
-            raise AssetError(
-                "fps must be greater than 0."
-            )
+            raise AssetError("fps must be greater than 0.")
+
+        if len(frames) == 1:
+            loop_mode = LoopMode.LOOP
 
         self.frames: list[Sprite] = frames
         self.loop_mode: LoopMode = loop_mode

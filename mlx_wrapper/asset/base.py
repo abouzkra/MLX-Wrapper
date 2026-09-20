@@ -22,7 +22,10 @@ class Asset(ABC):
         _destroyed state as True.
         """
         if self.__dict__.get("_destroyed"):
-            return
+            raise DestroyedResourceError(
+                "Attemted to destroy already destroyed asset "
+                f"{self.__class__.__name__}"
+            )
         self._custom_destroy()
         self.__dict__.clear()
         self.__dict__["_destroyed"] = True
@@ -38,6 +41,8 @@ class Asset(ABC):
 
     def __getattr__(self, name: str) -> Any:
         """Intercepts missing attributes to prevent destroyed asset usage.
+
+        name (str): Name of the attribute.
 
         Raises:
             DestroyedResourceError: If a destroyed asset's attribute has been
