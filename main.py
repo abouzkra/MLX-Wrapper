@@ -35,10 +35,13 @@ class TestApp(MLXApp):
         self.assets["iori"].play()
 
         self.load_ttf_font("./assets/fonts/Minecraft.ttf", 32, "S")
+        self.bind_key(KEY_LEFT, self.move_left, held=True)
+        self.bind_key(KEY_RIGHT, self.move_right, held=True)
+        self.bind_key(KEY_UP, self.move_up, held=True)
+        self.bind_key(KEY_DOWN, self.move_down, held=True)
 
-    def update(self, dt) -> None:
-        self.player_move(dt)
-        self.assets["iori"].update(dt)
+    def update(self) -> None:
+        self.assets["iori"].update(self.dt)
 
         self.main.fill(0xFFB0B0B0)
 
@@ -50,21 +53,23 @@ class TestApp(MLXApp):
 
         self.main.draw_to_window(self.win_ptr, 0, 0)
 
-    def player_move(self, dt) -> None:
-        if KEY_LEFT in self.active_keys:
-            self.player_x = max(0.0, self.player_x - self.player_speed * dt)
-        if KEY_UP in self.active_keys:
-            self.player_y = max(0.0, self.player_y - self.player_speed * dt)
-        if KEY_RIGHT in self.active_keys:
-            self.player_x = min(
-                float(self.width - self.assets["player"].width),
-                self.player_x + self.player_speed * dt,
-            )
-        if KEY_DOWN in self.active_keys:
-            self.player_y = min(
-                float(self.height - self.assets["player"].height),
-                self.player_y + self.player_speed * dt,
-            )
+    def move_left(self) -> None:
+        self.player_x = max(0.0, self.player_x - self.player_speed * self.dt)
+
+    def move_up(self) -> None:
+        self.player_y = max(0.0, self.player_y - self.player_speed * self.dt)
+
+    def move_right(self) -> None:
+        self.player_x = min(
+            float(self.width - self.assets["player"].width),
+            self.player_x + self.player_speed * self.dt,
+        )
+
+    def move_down(self) -> None:
+        self.player_y = min(
+            float(self.height - self.assets["player"].height),
+            self.player_y + self.player_speed * self.dt,
+        )
 
     def on_cleanup(self) -> None:
         self.assets["iori"].destroy()

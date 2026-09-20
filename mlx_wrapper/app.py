@@ -5,7 +5,10 @@ from mlx import Mlx
 
 from .asset.font import Font
 from .asset.sprite import Sprite
-from .exceptions import NativeCallError
+from .exceptions import MLXError, NativeCallError, RenderingError
+
+
+Callback = tuple[Callable[..., None], Any, Any]
 
 
 class MLXApp:
@@ -59,9 +62,15 @@ class MLXApp:
         self._target_frame_time: float = 0.0
         if target_fps > 0:
             self._target_frame_time = 1.0 / target_fps
+        else:
+            raise MLXError("target_fps must be greater than 0.")
 
         # Dictionary of key handlers mapping key codes to callback functions
-        self._key_handlers: dict[int, Callable[[], None]] = {}
+        # These are one-time (e.g. key press events)
+        self._key_handlers: dict[int, Callback] = {}
+        # Dictionary of key handlers mapping key codes to continuous callback
+        # functions (e.g. holding arrow to move a plyer)
+        self._held_key_handlers: dict[int, Callback] = {}
         # Current tick count.
         self._tick: int = 0
         # Last time the loop hook was called, used for frame rate limiting.
@@ -101,17 +110,29 @@ class MLXApp:
         self.mlx.mlx_loop_exit(self.mlx_ptr)
         print("Mlx loop exit")
 
-    def bind_key(self, key: int, callback: Callable[[], None]) -> None:
+    def bind_key(
+        self,
+        key: int, callback: Callable[..., None],
+        held: bool = False,
+        *args: Any, **kwargs: Any
+    ) -> None:
         """Bind a key to a callback function.
 
         Args:
             key (int): Key code to bind.
             callback: Function to call when the key is pressed.
+            held (bool): Flag to specify if the key is one-time or continuous.
+                Defaults to False.
+            *args: Variable length argument list.
+            **kwargs: Variable length keyword arguments.
 
         """
-        if key in self._key_handlers:
+        if key in self._key_handlers or key in self._held_key_handlers:
             print(f"Warning: key {key} already has a handler")
-        self._key_handlers[key] = callback
+        if held:
+            self._held_key_handlers[key] = (callback, args, kwargs)
+        else:
+            self._key_handlers[key] = (callback, args, kwargs)
 
     def _internal_key_press(self, key: int, *args: Any) -> None:
         """Key press event handler.
@@ -125,10 +146,9 @@ class MLXApp:
 
         """
         self.active_keys.add(key)
-        if key == 65307:
-            self._on_close()
         if key in self._key_handlers:
-            self._key_handlers[key]()
+            cb, args, kwargs = self._key_handlers[key]
+            cb(*args, **kwargs)
 
     def _internal_key_release(self, key: int, *args: Any) -> None:
         """Key release event handler.
@@ -161,21 +181,23 @@ class MLXApp:
             current_time = time.perf_counter()
             elapsed = current_time - self._last_time
 
+        for k in self._held_key_handlers:
+            if k in self.active_keys:
+                cb, args, kwargs = self._held_key_handlers[k]
+                cb(*args, **kwargs)
+
         self._last_time = current_time
 
-        dt = min(elapsed, 0.0333)
+        self.dt = min(elapsed, 0.0333)
 
         self._tick += 1
-        self.update(dt)
+        self.update()
 
-    def update(self, dt: float) -> None:
+    def update(self) -> None:
         """Update function.
 
         Called every frame to update the application state according to
         the elapsed time.
-
-        Args:
-            dt (float): Time elapsed since the last update.
 
         """
         pass
@@ -250,10 +272,10 @@ class MLXApp:
 
         """
         if not text:
-            return
+            raise RenderingError("Text cannot be empty.")
 
         if font_key not in self.fonts:
-            return
+            raise RenderingError(f"Font '{font_key}' not loaded.")
 
         font = self.fonts[font_key]
         if text not in font.rasterized_strings:
