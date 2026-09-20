@@ -1,12 +1,11 @@
 import string
 from collections import UserDict
-from typing import Any
 
 import numpy as np
 from mlx import Mlx
 from PIL import ImageFont
 
-from mlx_wrapper.exceptions import FontLoadError, RenderingError
+from mlx_wrapper.exceptions import AssetError, FontLoadError, RenderingError
 
 from .base import Asset
 from .sprite import Sprite
@@ -17,6 +16,11 @@ CHARACTERS = string.ascii_letters + string.digits + string.punctuation + "▯"
 class Font(Asset, UserDict):
     """Representation of a font as a bitmap atlas for rendering text on the
     MLX canvas.
+
+    It Behaves as a dictionary where the keys are the specified characters
+    above (`CHARACTERS`), and the values are a tuple containing:
+       - x-coordinate where the character is rendered on the atlas.
+       - actual wiidth of the character.
 
     Attributes:
         size (int): The font size.
@@ -93,7 +97,7 @@ class Font(Asset, UserDict):
                 # Character position and width in the bitmap atlas
                 cx, cw = max_w * i, w
                 # Pad the character bitmap to fit in the atlas
-                pad_top = offset_y - min_offset_y
+                pad_top = int(offset_y - min_offset_y)
                 pad_bottom = int(max_h - pad_top - h)
                 self.atlas.pixels[:, cx: cx + max_w] = np.pad(
                     c_bitmap,
@@ -108,7 +112,7 @@ class Font(Asset, UserDict):
         except (ValueError, IndexError) as e:
             raise FontLoadError("Couldn't create font atlas: ", e) from e
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> tuple[int, int]:
         """Return the position and width of the character in the atlas.
 
         Args:
@@ -116,6 +120,7 @@ class Font(Asset, UserDict):
 
         Returns:
             tuple[int, int]: Position and width of the character in the atlas.
+
         """
         if key not in self:
             return self.data["▯"]
@@ -131,6 +136,8 @@ class Font(Asset, UserDict):
             int: Width of the text in pixels.
 
         """
+        if not text:
+            raise AssetError("Cannot measure empty string")
         return int(
             np.sum([self[c][1] for c in text]) + (len(text) - 1) * self.spacing
         )
@@ -146,6 +153,9 @@ class Font(Asset, UserDict):
 
         Args:
             text (str): Text to rasterize.
+            color (int): Color of the text.
+            cache (bool): Whether to cache the rasterized text or no.
+                Defaults to True.
 
         """
         if not text:
@@ -167,7 +177,9 @@ class Font(Asset, UserDict):
                 ) | (color & 0x00FFFFFF)
                 tx = tx + self.spacing + cw
         except (ValueError, IndexError) as e:
-            raise FontLoadError(f"Couldn't rasterize text {text}: ", e) from e
+            raise FontLoadError(
+                f"Couldn't rasterize string {text}: ", e
+            ) from e
 
         if cache:
             self.rasterized_strings[(text, color)] = text_sprite

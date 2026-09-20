@@ -39,6 +39,14 @@ class Sprite(Asset):
             height (int): Height of the sprite.
 
         """
+        if width <= 0 or height <= 0:
+            raise ImageAllocationError(
+                f"Cannot allocate image with dimensions {width}x{height}"
+            )
+        if not img_ptr:
+            raise ImageAllocationError(
+                f"Failed to allocate a new image {width}x{height}"
+            )
         self.mlx: Mlx = mlx
         self.mlx_ptr: int = mlx_ptr
         self.img_ptr: int = img_ptr
@@ -77,15 +85,7 @@ class Sprite(Asset):
             Sprite: The created blank sprite.
 
         """
-        if width <= 0 or height <= 0:
-            raise ImageAllocationError(
-                f"Cannot allocate image with dimensions {width}x{height}"
-            )
         img_ptr = mlx.mlx_new_image(mlx_ptr, width, height)
-        if not img_ptr:
-            raise ImageAllocationError(
-                f"Failed to allocate a new image {width}x{height}"
-            )
         blank = cls(mlx, mlx_ptr, img_ptr, width, height)
         blank.fill(0)
         return blank
