@@ -140,5 +140,4 @@ class AnimatedSprite(Asset):
     def _custom_destroy(self) -> None:
         """Destroy the animated sprite, freeing its resources."""
 
-        for f in self.frames:
-            f.destroy()
+        self.frames = []
