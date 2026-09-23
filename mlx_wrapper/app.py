@@ -147,8 +147,8 @@ class MLXApp:
         """
         self.active_keys.add(key)
         if key in self._key_handlers:
-            cb, args, kwargs = self._key_handlers[key]
-            cb(*args, **kwargs)
+            cb, cb_args, cb_kwargs = self._key_handlers[key]
+            cb(*cb_args, **cb_kwargs)
 
     def _internal_key_release(self, key: int, *args: Any) -> None:
         """Key release event handler.
@@ -181,7 +181,7 @@ class MLXApp:
             current_time = time.perf_counter()
             elapsed = current_time - self._last_time
 
-        for k in self._held_key_handlers:
+        for k in list(self._held_key_handlers):
             if k in self.active_keys:
                 cb, args, kwargs = self._held_key_handlers[k]
                 cb(*args, **kwargs)
@@ -278,8 +278,11 @@ class MLXApp:
             raise RenderingError(f"Font '{font_key}' not loaded.")
 
         font = self.fonts[font_key]
-        if text not in font.rasterized_strings:
-            font.rasterize_text(text, color, cache)
-        text_sprite = font.rasterized_strings[(text, color)]
+        if (text, color) not in font.rasterized_strings:
+            text_sprite = font.rasterize_text(text, color)
+            if cache:
+                font.rasterized_strings[(text, color)] = text_sprite
+        else:
+            text_sprite = font.rasterized_strings[(text, color)]
 
         text_sprite.blit(target, x, y)

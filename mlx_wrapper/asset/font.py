@@ -145,17 +145,14 @@ class Font(Asset, UserDict):
     def rasterize_text(
         self,
         text: str,
-        color: int = 0xFF000000,
-        cache: bool = True
-    ) -> None:
+        color: int = 0xFF000000
+    ) -> Sprite:
         """Rasterize text into a sprite, and store it in the rasterized_strings
         cache.
 
         Args:
             text (str): Text to rasterize.
             color (int): Color of the text.
-            cache (bool): Whether to cache the rasterized text or no.
-                Defaults to True.
 
         """
         if not text:
@@ -181,8 +178,7 @@ class Font(Asset, UserDict):
                 f"Couldn't rasterize string {text}: ", e
             ) from e
 
-        if cache:
-            self.rasterized_strings[(text, color)] = text_sprite
+        return text_sprite
 
     def _custom_destroy(self) -> None:
         """Destroy the font, freeing its resources and clear cached strings."""
