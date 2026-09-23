@@ -1,5 +1,6 @@
 import string
 from collections import UserDict
+from typing import Any
 
 import numpy as np
 from mlx import Mlx
@@ -31,7 +32,6 @@ class Font(Asset, UserDict):
 
     def __init__(
         self,
-        mlx: Mlx, mlx_ptr: int,
         font_path: str, font_size: int,
         spacing: int = 1
     ) -> None:
@@ -58,6 +58,7 @@ class Font(Asset, UserDict):
 
         """
         UserDict.__init__(self)
+        mlx, mlx_ptr = Asset.get_context()
         self.mlx: Mlx = mlx
         self.mlx_ptr: int = mlx_ptr
         self.size: int = font_size
@@ -84,7 +85,7 @@ class Font(Asset, UserDict):
 
         max_h = max_bottom_y - min_offset_y
         self.atlas: Sprite = Sprite.blank(
-            mlx, mlx_ptr, int(max_w * len(CHARACTERS)) +
+            int(max_w * len(CHARACTERS)) +
             font_size // 3, int(max_h)
         )
 
@@ -112,7 +113,7 @@ class Font(Asset, UserDict):
         except (ValueError, IndexError) as e:
             raise FontLoadError("Couldn't create font atlas: ", e) from e
 
-    def __getitem__(self, key: str) -> tuple[int, int]:
+    def __getitem__(self, key: str) -> Any:
         """Return the position and width of the character in the atlas.
 
         Args:
@@ -158,9 +159,7 @@ class Font(Asset, UserDict):
         if not text:
             raise RenderingError("Cannot render empty string")
         text_width = self.measure_text(text)
-        text_sprite = Sprite.blank(
-            self.mlx, self.mlx_ptr, text_width, self.atlas.pixels.shape[0]
-        )
+        text_sprite = Sprite.blank(text_width, self.atlas.pixels.shape[0])
 
         try:
             tx = 0

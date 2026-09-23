@@ -12,19 +12,15 @@ class TestApp(MLXApp):
         self, width: int, height: int, title: str, target_fps: int = 60
     ) -> None:
         super().__init__(width, height, title, target_fps=target_fps)
-        self.main = Sprite.blank(self.mlx, self.mlx_ptr, width, height)
+        self.main = Sprite.blank(width, height)
         self.assets = {
             "iori": AnimatedSprite(
                 [
-                    Sprite.from_file(
-                        self.mlx,
-                        self.mlx_ptr,
-                        f"./assets/iori/frame_{i:02}_delay-0.1s.png",
-                    )
+                    Sprite.from_file(f"./assets/iori/frame_{i:02}_delay-0.1s.png")
                     for i in range(32)
                 ], fps=10,
             ),
-            "player": Sprite.blank(self.mlx, self.mlx_ptr, 32, 32),
+            "player": Sprite.blank(32, 32),
         }
         self.assets["player"].fill(0xFFF0F0F0)
 
