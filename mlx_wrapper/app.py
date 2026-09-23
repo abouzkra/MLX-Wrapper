@@ -3,10 +3,10 @@ from typing import Any, Callable
 
 from mlx import Mlx
 
+from .asset.base import Asset
 from .asset.font import Font
 from .asset.sprite import Sprite
 from .exceptions import MLXError, NativeCallError, RenderingError
-
 
 Callback = tuple[Callable[..., None], Any, Any]
 
@@ -49,6 +49,7 @@ class MLXApp:
         if self.win_ptr == 0:
             raise NativeCallError("mlx_new_window failed to create window")
 
+        Asset.set_context(self.mlx, self.mlx_ptr)
         self.width: int = width
         self.height: int = height
 
@@ -112,9 +113,11 @@ class MLXApp:
 
     def bind_key(
         self,
-        key: int, callback: Callable[..., None],
+        key: int,
+        callback: Callable[..., None],
         held: bool = False,
-        *args: Any, **kwargs: Any
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         """Bind a key to a callback function.
 
@@ -230,6 +233,8 @@ class MLXApp:
         for f in self.fonts.values():
             f.destroy()
 
+        Asset.clear_context()
+
     def on_cleanup(self) -> None:
         """Hook for additional cleanup.
 
@@ -247,16 +252,17 @@ class MLXApp:
             key (str): Font key.
 
         """
-        self.fonts[key] = Font(self.mlx, self.mlx_ptr, font_path, font_size)
+        self.fonts[key] = Font(font_path, font_size)
 
     def draw_text(
         self,
         target: Sprite,
         text: str,
-        x: int, y: int,
+        x: int,
+        y: int,
         font_key: str,
         color: int = 0xFF000000,
-        cache: bool = True
+        cache: bool = True,
     ) -> None:
         """Draw text on the target sprite using the specified font and color.
 

@@ -26,7 +26,7 @@ class Sprite(Asset):
     """
 
     def __init__(
-        self, mlx: Mlx, mlx_ptr: int, img_ptr: int, width: int, height: int
+        self, img_ptr: int, width: int, height: int
     ) -> None:
         """Initialize a Sprite instance with the given MLX image
         pointer and dimensions.
@@ -47,6 +47,7 @@ class Sprite(Asset):
             raise ImageAllocationError(
                 f"Failed to allocate a new image {width}x{height}"
             )
+        mlx, mlx_ptr = Asset.get_context()
         self.mlx: Mlx = mlx
         self.mlx_ptr: int = mlx_ptr
         self.img_ptr: int = img_ptr
@@ -70,14 +71,11 @@ class Sprite(Asset):
     @classmethod
     def blank(
         cls,
-        mlx: Mlx, mlx_ptr: int,
         width: int, height: int
     ) -> "Sprite":
         """Create a blank sprite with the given dimensions.
 
         Args:
-            mlx (Mlx): MLX instance.
-            mlx_ptr (int): MLX pointer.
             width (int): Width of the sprite.
             height (int): Height of the sprite.
 
@@ -85,24 +83,24 @@ class Sprite(Asset):
             Sprite: The created blank sprite.
 
         """
+        mlx, mlx_ptr = cls.get_context()
         img_ptr = mlx.mlx_new_image(mlx_ptr, width, height)
-        blank = cls(mlx, mlx_ptr, img_ptr, width, height)
+        blank = cls(img_ptr, width, height)
         blank.fill(0)
         return blank
 
     @classmethod
-    def from_file(cls, mlx: Mlx, mlx_ptr: int, file_path: str) -> "Sprite":
+    def from_file(cls, file_path: str) -> "Sprite":
         """Load a sprite from a PNG or XPM file.
 
         Args:
-            mlx (Mlx): MLX instance.
-            mlx_ptr (int): MLX pointer.
             file_path (str): Path to the image file.
 
         Returns:
             Sprite: The loaded sprite.
 
         """
+        mlx, mlx_ptr = cls.get_context()
         ext = os.path.splitext(file_path)[1].lower()
 
         match ext:
@@ -118,7 +116,7 @@ class Sprite(Asset):
         if not res or not res[0]:
             raise ImageLoadError(f"Could not load sprite file: '{file_path}'")
 
-        return cls(mlx, mlx_ptr, res[0], res[1], res[2])
+        return cls(res[0], res[1], res[2])
 
     def set_pixel(self, x: int, y: int, color: int) -> None:
         """Set pixel at (x, y) to the given color.
