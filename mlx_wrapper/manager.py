@@ -1,5 +1,4 @@
 import os
-from random import sample
 
 from lxml import etree as et
 
@@ -8,6 +7,7 @@ from .asset.font import Font
 from .asset.sprite import Sprite
 from .exceptions import AssetManagerError
 
+# XML schema for asset file validation
 ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
@@ -17,12 +17,17 @@ ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
             <xs:element name="fonts" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="font" minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="font" minOccurs="0"
+                            maxOccurs="unbounded">
                             <xs:complexType>
-                                <xs:attribute name="id" type="xs:string" use="required"/>
-                                <xs:attribute name="path" type="xs:string" use="required"/>
-                                <xs:attribute name="size" type="xs:positiveInteger" use="required"/>
-                                <xs:attribute name="spacing" type="xs:positiveInteger" use="optional"/>
+                                <xs:attribute name="id" type="xs:string"
+                                use="required"/>
+                                <xs:attribute name="path" type="xs:string"
+                                use="required"/>
+                                <xs:attribute name="size"
+                                type="xs:positiveInteger" use="required"/>
+                                <xs:attribute name="spacing"
+                                type="xs:positiveInteger" use="optional"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
@@ -32,10 +37,13 @@ ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
             <xs:element name="sprites" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="sprite" minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="sprite" minOccurs="0"
+                        maxOccurs="unbounded">
                             <xs:complexType>
-                                <xs:attribute name="id" type="xs:string" use="required"/>
-                                <xs:attribute name="path" type="xs:string" use="required"/>
+                                <xs:attribute name="id" type="xs:string"
+                                use="required"/>
+                                <xs:attribute name="path" type="xs:string"
+                                use="required"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
@@ -45,17 +53,22 @@ ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
             <xs:element name="animated_sprites" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="animated_sprite" minOccurs="0" maxOccurs="unbounded">
+                        <xs:element name="animated_sprite" minOccurs="0"
+                        maxOccurs="unbounded">
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="frame" minOccurs="1" maxOccurs="unbounded">
+                                    <xs:element name="frame" minOccurs="1"
+                                    maxOccurs="unbounded">
                                         <xs:complexType>
-                                            <xs:attribute name="path" type="xs:string" use="required"/>
+                                            <xs:attribute name="path"
+                                            type="xs:string" use="required"/>
                                         </xs:complexType>
                                     </xs:element>
                                 </xs:sequence>
-                                <xs:attribute name="id" type="xs:string" use="required"/>
-                                <xs:attribute name="fps" type="xs:integer" use="required"/>
+                                <xs:attribute name="id" type="xs:string"
+                                use="required"/>
+                                <xs:attribute name="fps" type="xs:integer"
+                                use="required"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
@@ -70,10 +83,33 @@ ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 class AssetManager:
+    """Manages the loading and storage of the wrapper's assets (Sprites,
+    Fonts, Animated Sprites).
+
+    It loads assets from the specified XML file, and validates its structure
+    against the predefined XML schema (XSD) above.
+
+    Attributes:
+        fonts (dict[str, Font]): Dictionary of fonts.
+        sprites (dict[str, Sprite]): Dictionary of Sprites.
+        animated_sprites (dict[str, AnimatedSprite]): Dictionary of Animated
+            Sprites.
+    """
     def __init__(self, xml_file: str) -> None:
+        """Initialize the AssetManager using the specified XML file.
+
+        Args:
+            xml_file (str): Path to the XML asset file.
+
+        Raises:
+            AssetManagerError: If the XML file cannot be loaded or is invalid.
+            AssetError: If an asset loading failure occurs.
+
+        """
         self.fonts: dict[str, Font] = {}
         self.sprites: dict[str, Sprite] = {}
         self.animated_sprites: dict[str, AnimatedSprite] = {}
+        # Helper set to track seen asset ids.
         self._seen_ids: set[str] = set()
 
         try:
@@ -117,6 +153,15 @@ class AssetManager:
             )
 
     def _check_id(self, asset_id: str) -> None:
+        """Helper method to check if an asset's id is globally unique.
+
+        Args:
+            asset_id (str): The id of the asset to check.
+
+        Raises:
+            AssetManagerError: If the asset's id is not unique globally.
+
+        """
         if asset_id in self._seen_ids:
             raise AssetManagerError(
                 f"Duplicate asset id '{asset_id}', "
@@ -125,6 +170,16 @@ class AssetManager:
         self._seen_ids.add(asset_id)
 
     def _validate_xml(self, xml_tree: et.ElementTree[et.Element[str]]) -> None:
+        """Helper method to validate the XML assets file against the schema.
+
+        Args:
+            xml_tree (et.ElementTree[et.Element[str]]): The parsed XML tree.
+
+        Raises:
+            AssetManagerError: If the XML is invalid or the schema fails to
+                load.
+
+        """
         try:
             schema = et.XMLSchema(et.fromstring(ASSET_SCHEMA.encode("utf-8")))
         except (AttributeError, et.XMLSyntaxError, ValueError) as e:
@@ -138,16 +193,52 @@ class AssetManager:
             )
 
     def get_sprite(self, id: str) -> Sprite:
+        """Get a sprite by its id.
+
+        Args:
+            id (str): The id of the sprite to retrieve.
+
+        Returns:
+            Sprite: The sprite with the specified id.
+
+        Raises:
+            AssetManagerError: If no sprite with the given id is found.
+        """
         if id not in self.sprites:
             raise AssetManagerError(f"No sprite with id '{id}' was found.")
         return self.sprites[id]
 
     def get_font(self, id: str) -> Font:
+        """Get a font by its id.
+
+        Args:
+            id (str): The id of the font to retrieve.
+
+        Returns:
+            Font: The font with the specified id.
+
+        Raises:
+            AssetManagerError: If no font with the given id is found.
+        """
         if id not in self.fonts:
             raise AssetManagerError(f"No font with id '{id}' was found.")
         return self.fonts[id]
 
     def get_animated_sprite(self, id: str) -> AnimatedSprite:
+        """Get an animated sprite by its id.
+
+        Args:
+            id (str): The id of the animated sprite to retrieve.
+
+        Returns:
+            AnimatedSprite: The animated sprite with the specified id.
+
+        Raises:
+            AssetManagerError: If no animated sprite with the given id is
+                found.
+        """
         if id not in self.animated_sprites:
-            raise AssetManagerError(f"No animated sprite with id '{id}' was found.")
+            raise AssetManagerError(
+                f"No animated sprite with id '{id}' was found."
+            )
         return self.animated_sprites[id]
