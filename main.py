@@ -1,5 +1,6 @@
 from mlx_wrapper import AnimatedSprite, MLXApp, Sprite
 from mlx_wrapper.exceptions import MLXError
+from mlx_wrapper.manager import AssetManager
 
 KEY_LEFT = 0xFF51
 KEY_UP = 0xFF52
@@ -13,13 +14,9 @@ class TestApp(MLXApp):
     ) -> None:
         super().__init__(width, height, title, target_fps=target_fps)
         self.main = Sprite.blank(width, height)
+        am = AssetManager("./assets.xml")
         self.assets = {
-            "iori": AnimatedSprite(
-                [
-                    Sprite.from_file(f"./assets/iori/frame_{i:02}_delay-0.1s.png")
-                    for i in range(32)
-                ], fps=10,
-            ),
+            "iori": am.get_animated_sprite('iori'),
             "player": Sprite.blank(32, 32),
         }
         self.assets["player"].fill(0xFFF0F0F0)
