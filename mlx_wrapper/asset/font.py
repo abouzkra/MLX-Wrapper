@@ -31,9 +31,7 @@ class Font(Asset, UserDict):
     """
 
     def __init__(
-        self,
-        font_path: str, font_size: int,
-        spacing: int = 1
+        self, font_path: str, font_size: int, spacing: int = 1
     ) -> None:
         """Initialize a Font instance with the specified parameters.
 
