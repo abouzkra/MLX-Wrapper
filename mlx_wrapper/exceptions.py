@@ -33,6 +33,11 @@ class AssetError(MLXError):
     pass
 
 
+class AssetManagerError(MLXError):
+    """Base exception for all asset management errors."""
+    pass
+
+
 class RenderingError(AssetError):
     """Raised when a drawing operation fails."""
     pass
