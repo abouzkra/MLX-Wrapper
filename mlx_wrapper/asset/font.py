@@ -177,6 +177,39 @@ class Font(Asset, UserDict):
 
         return text_sprite
 
+    def draw_text(
+        self,
+        target: Sprite,
+        text: str,
+        x: int,
+        y: int,
+        color: int = 0xFF000000,
+        cache: bool = False
+    ) -> None:
+        """Draw text on the target sprite using the specified color.
+
+        Args:
+            target (Sprite): Target sprite to draw on.
+            text (str): Text to draw.
+            x (int): X position of the text.
+            y (int): Y position of the text.
+            color (int): Color of the text. Defaults to 0xFF000000.
+            cache (bool): Whether to cache the rasterized text.
+                Defaults to False.
+
+        """
+        if not text:
+            raise RenderingError("Text cannot be empty.")
+
+        if (text, color) in self.rasterized_strings:
+            text_sprite = self.rasterized_strings[(text, color)]
+        else:
+            text_sprite = self.rasterize_text(text, color)
+            if cache:
+                self.rasterized_strings[(text, color)] = text_sprite
+
+        text_sprite.blit(target, x, y)
+
     def _custom_destroy(self) -> None:
         """Destroy the font, freeing its resources and clear cached strings."""
 

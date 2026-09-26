@@ -45,7 +45,7 @@ class TestApp(MLXApp):
         self.player.blit(
             self.main, int(self.player_x), int(self.player_y)
         )
-        self.draw_text(self.main, "ap", 10, 10, self.am.get_font("minecraft"))
+        self.am.get_font("minecraft").draw_text(self.main, "ap", 10, 10)
 
         self.main.draw_to_window(self.win_ptr, 0, 0)
 
