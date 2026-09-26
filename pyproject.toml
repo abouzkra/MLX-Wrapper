@@ -2,11 +2,13 @@
 name = "mlx-wrapper"
 version = "1.0.0a1"
 description = "Simple Object-oriented wrapper around 42 school's MiniLibX"
+readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "mlx",
     "numpy>=2.5.2",
     "pillow>=12.3.0",
+    "lxml>=6.1.3"
 ]
 
 [tool.uv.sources]
@@ -15,3 +17,6 @@ mlx = { path = "./mlx-2.4-py3-none-any.whl" }
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mlx_wrapper"]
