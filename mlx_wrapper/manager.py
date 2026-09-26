@@ -1,3 +1,4 @@
+import copy
 import os
 
 from lxml import etree as et
@@ -241,4 +242,43 @@ class AssetManager:
             raise AssetManagerError(
                 f"No animated sprite with id '{id}' was found."
             )
-        return self.animated_sprites[id]
+        return copy.copy(self.animated_sprites[id])
+
+    def unload_sprite(self, id: str) -> None:
+        """Unload a sprite.
+
+        Args:
+            id (str): ID of the sprite to unload.
+        """
+        if id in self.sprites:
+            self.sprites[id].destroy()
+            self.sprites.pop(id)
+
+    def unload_font(self, id: str) -> None:
+        """Unload a font.
+
+        Args:
+            id (str): ID of the font to unload.
+        """
+        if id in self.fonts:
+            self.fonts[id].destroy()
+            self.fonts.pop(id)
+
+    def unload_animated_sprite(self, id: str) -> None:
+        """Unload an animated sprite.
+
+        Args:
+            id (str): ID of the animated sprite to unload.
+        """
+        if id in self.animated_sprites:
+            self.animated_sprites[id].destroy()
+            self.animated_sprites.pop(id)
+
+    def clear(self) -> None:
+        """Destroy all loaded assets."""
+        for s in self.sprites.values():
+            s.destroy()
+        for f in self.fonts.values():
+            f.destroy()
+        for a_s in self.animated_sprites.values():
+            a_s.destroy()

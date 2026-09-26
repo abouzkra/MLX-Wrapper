@@ -2,7 +2,7 @@
 <assets base_dir="assets">
     <fonts>
         <font id="mally_bold" path="fonts/Mally-Bold.ttf" size="16"/>
-        <font id="minecraft" path="fonts/Minecraft.ttf" size="16"/>
+        <font id="minecraft" path="fonts/Minecraft.ttf" size="32"/>
         <font id="sb_vibe" path="fonts/SB Vibe Regular.otf" size="16"/>
     </fonts>
 

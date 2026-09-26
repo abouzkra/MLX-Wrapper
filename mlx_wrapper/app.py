@@ -21,7 +21,6 @@ class MLXApp:
         width: Width of the window.
         height: Height of the window.
         target_fps: Target frames per second.
-        fonts: Dictionary of loaded fonts.
         active_keys: Set of active keys.
 
     """
@@ -52,8 +51,6 @@ class MLXApp:
         Asset.set_context(self.mlx, self.mlx_ptr)
         self.width: int = width
         self.height: int = height
-
-        self.fonts: dict[str, Font] = {}
 
         # NOTE: although the user can specify a value higher than 60,
         # the actual frame rate is capped at the screen's refresh rate because
@@ -208,8 +205,8 @@ class MLXApp:
     def _shutdown(self) -> None:
         """Shutdown The MLX app.
 
-        Cleans up resources (fonts, additional cleanup, window) and releses the
-        MLX pointer.
+        Cleans up resources (assets, window), releases the MLX pointer
+        and turns key autorepeat back on.
         """
         self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
         self._cleanup()
@@ -224,15 +221,11 @@ class MLXApp:
     def _cleanup(self) -> None:
         """Cleanup function.
 
-        Destroys all font atlases and clears the fonts dictionary.
+        Executes the cleanup hook and clears the asset context.
         Should be overridden by subclasses to perform additional cleanup.
         """
 
         self.on_cleanup()
-
-        for f in self.fonts.values():
-            f.destroy()
-
         Asset.clear_context()
 
     def on_cleanup(self) -> None:
@@ -242,25 +235,13 @@ class MLXApp:
         """
         pass
 
-    def load_ttf_font(self, font_path: str, font_size: int, key: str) -> None:
-        """Load a TrueType font from font_path and store it under the given
-        key.
-
-        Args:
-            font_path (str): Path to the font file.
-            font_size (int): Size of the font.
-            key (str): Font key.
-
-        """
-        self.fonts[key] = Font(font_path, font_size)
-
     def draw_text(
         self,
         target: Sprite,
         text: str,
         x: int,
         y: int,
-        font_key: str,
+        font: Font,
         color: int = 0xFF000000,
         cache: bool = True,
     ) -> None:
@@ -271,7 +252,7 @@ class MLXApp:
             text (str): Text to draw.
             x (int): X position of the text.
             y (int): Y position of the text.
-            font_key (str): Key of the font to use.
+            font (Font): Font to use for rendering.
             color (int): Color of the text. Defaults to 0xFF000000.
             cache (bool): Whether to cache the rasterized text.
                 Defaults to True.
@@ -280,15 +261,11 @@ class MLXApp:
         if not text:
             raise RenderingError("Text cannot be empty.")
 
-        if font_key not in self.fonts:
-            raise RenderingError(f"Font '{font_key}' not loaded.")
-
-        font = self.fonts[font_key]
-        if (text, color) not in font.rasterized_strings:
+        if (text, color) in font.rasterized_strings:
+            text_sprite = font.rasterized_strings[(text, color)]
+        else:
             text_sprite = font.rasterize_text(text, color)
             if cache:
                 font.rasterized_strings[(text, color)] = text_sprite
-        else:
-            text_sprite = font.rasterized_strings[(text, color)]
 
         text_sprite.blit(target, x, y)
