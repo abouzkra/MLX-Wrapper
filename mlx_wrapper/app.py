@@ -234,38 +234,3 @@ class MLXApp:
         Should be overridden by sublcasses to perform additional cleanup.
         """
         pass
-
-    def draw_text(
-        self,
-        target: Sprite,
-        text: str,
-        x: int,
-        y: int,
-        font: Font,
-        color: int = 0xFF000000,
-        cache: bool = True,
-    ) -> None:
-        """Draw text on the target sprite using the specified font and color.
-
-        Args:
-            target (Sprite): Target sprite to draw on.
-            text (str): Text to draw.
-            x (int): X position of the text.
-            y (int): Y position of the text.
-            font (Font): Font to use for rendering.
-            color (int): Color of the text. Defaults to 0xFF000000.
-            cache (bool): Whether to cache the rasterized text.
-                Defaults to True.
-
-        """
-        if not text:
-            raise RenderingError("Text cannot be empty.")
-
-        if (text, color) in font.rasterized_strings:
-            text_sprite = font.rasterized_strings[(text, color)]
-        else:
-            text_sprite = font.rasterize_text(text, color)
-            if cache:
-                font.rasterized_strings[(text, color)] = text_sprite
-
-        text_sprite.blit(target, x, y)
