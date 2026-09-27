@@ -8,7 +8,7 @@ dependencies = [
     "mlx",
     "numpy>=2.5.2",
     "pillow>=12.3.0",
-    "lxml>=6.1.3"
+    "lxml>=6.1.3",
 ]
 
 [tool.uv.sources]

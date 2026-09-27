@@ -4,9 +4,7 @@ from typing import Any, Callable
 from mlx import Mlx
 
 from .asset.base import Asset
-from .asset.font import Font
-from .asset.sprite import Sprite
-from .exceptions import MLXError, NativeCallError, RenderingError
+from .exceptions import MLXError, NativeCallError
 
 Callback = tuple[Callable[..., None], Any, Any]
 
@@ -133,6 +131,17 @@ class MLXApp:
             self._held_key_handlers[key] = (callback, args, kwargs)
         else:
             self._key_handlers[key] = (callback, args, kwargs)
+
+    def unbind_key(self, key: int) -> None:
+        """Unbind a key from its callback function.
+
+        Args:
+            key (int): Key code to unbind.
+        """
+        if key in self._key_handlers:
+            self._key_handlers.pop(key)
+        if key in self._held_key_handlers:
+            self._held_key_handlers.pop(key)
 
     def _internal_key_press(self, key: int, *args: Any) -> None:
         """Key press event handler.
