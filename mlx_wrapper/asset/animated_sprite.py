@@ -1,8 +1,8 @@
 from enum import Enum
 
+from ..exceptions import AssetError
 from .base import Asset
 from .sprite import Sprite
-from ..exceptions import AssetError
 
 
 class LoopMode(Enum):
