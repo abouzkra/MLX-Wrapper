@@ -62,7 +62,6 @@ class Asset(ABC):
         This should be overridden in every subclass to provide comprehensive
         asset destruction.
         """
-        pass
 
     def __getattr__(self, name: str) -> Any:
         """Intercepts missing attributes to prevent destroyed asset usage.
