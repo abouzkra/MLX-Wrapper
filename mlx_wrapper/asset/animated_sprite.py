@@ -137,6 +137,16 @@ class AnimatedSprite(Asset):
         """
         self.frames[self.current_index].blit(target, x, y)
 
+    def draw_to_window(self, win_ptr: int, x: int, y: int) -> None:
+        """Draw the current frame to the window at (x, y).
+
+        Args:
+            win_ptr (int): The window pointer.
+            x (int): The x-coordinate of the target position.
+            y (int): The y-coordinate of the target position.
+        """
+        self.frames[self.current_index].draw_to_window(win_ptr, x, y)
+
     def _custom_destroy(self) -> None:
         """Destroy the animated sprite, freeing its resources."""
 
