@@ -1,5 +1,6 @@
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from mlx import Mlx
 
@@ -209,7 +210,6 @@ class MLXApp:
         the elapsed time.
 
         """
-        pass
 
     def _shutdown(self) -> None:
         """Shutdown The MLX app.
@@ -242,4 +242,3 @@ class MLXApp:
 
         Should be overridden by sublcasses to perform additional cleanup.
         """
-        pass
