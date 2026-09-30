@@ -3,7 +3,7 @@ import os
 
 from lxml import etree as et
 
-from .asset.animated_sprite import AnimatedSprite
+from .asset.animated_sprite import AnimatedSprite, LoopMode
 from .asset.font import Font
 from .asset.sprite import Sprite
 from .exceptions import AssetManagerError
@@ -70,6 +70,15 @@ ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
                                 use="required"/>
                                 <xs:attribute name="fps" type="xs:integer"
                                 use="required"/>
+                                <xs:attribute name="loop_mode" use="optional">
+                                    <xs:simpleType>
+                                    <xs:restriction base="xs:string">
+                                        <xs:enumeration value="loop"/>
+                                        <xs:enumeration value="once"/>
+                                        <xs:enumeration value="ping_pong"/>
+                                    </xs:restriction>
+                                    </xs:simpleType>
+                                </xs:attribute>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
@@ -145,12 +154,19 @@ class AssetManager:
             anim_sprite_id = anim_sprite_el.attrib['id']
             self._check_id(anim_sprite_id)
             anim_sprite_fps = int(anim_sprite_el.attrib['fps'])
+            loop_mode = anim_sprite_el.attrib.get('loop_mode', 'loop')
+            if loop_mode == 'loop':
+                loop_mode = LoopMode.LOOP
+            elif loop_mode == 'once':
+                loop_mode = LoopMode.ONCE
+            elif loop_mode == 'ping_pong':
+                loop_mode = LoopMode.PINGPONG
             frames = [
                 Sprite.from_file(os.path.join(base_dir, frame.get("path")))
                 for frame in anim_sprite_el.iterfind(".//frame")
             ]
             self.animated_sprites[anim_sprite_id] = AnimatedSprite(
-                frames, anim_sprite_fps
+                frames, anim_sprite_fps, loop_mode
             )
 
     def _check_id(self, asset_id: str) -> None:
