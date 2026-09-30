@@ -7,7 +7,7 @@
     </fonts>
 
     <animated_sprites>
-        <animated_sprite id="iori" fps="12">
+        <animated_sprite id="iori" fps="12" loop_mode="loop">
            	<frame path="iori/frame_00_delay-0.1s.png"/>
            	<frame path="iori/frame_01_delay-0.1s.png"/>
            	<frame path="iori/frame_02_delay-0.1s.png"/>
