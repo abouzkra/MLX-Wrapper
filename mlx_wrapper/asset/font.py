@@ -11,8 +11,6 @@ from mlx_wrapper.exceptions import AssetError, FontLoadError, RenderingError
 from .base import Asset
 from .sprite import Sprite
 
-CHARACTERS = string.ascii_letters + string.digits + string.punctuation + "▯"
-
 
 class Font(Asset, UserDict):
     """Representation of a font as a bitmap atlas for rendering text on the
@@ -30,8 +28,15 @@ class Font(Asset, UserDict):
 
     """
 
+    DEFAULT_CHARACTERS = string.ascii_letters + string.digits + \
+        string.punctuation + "▯"
+
     def __init__(
-        self, font_path: str, font_size: int, spacing: int = 1
+        self,
+        font_path: str,
+        font_size: int,
+        additional_chars: str = "",
+        spacing: int = 1
     ) -> None:
         """Initialize a Font instance with the specified parameters.
 
@@ -56,7 +61,7 @@ class Font(Asset, UserDict):
 
         """
         UserDict.__init__(self)
-        mlx, mlx_ptr = Asset.get_context()
+        mlx, mlx_ptr, _ = Asset.get_context()
         self.mlx: Mlx = mlx
         self.mlx_ptr: int = mlx_ptr
         self.size: int = font_size
@@ -70,7 +75,8 @@ class Font(Asset, UserDict):
         glyph_data = {}
         max_w, min_offset_y, max_bottom_y = 0, 0, 0
 
-        for c in CHARACTERS:
+        charset = str(self.DEFAULT_CHARACTERS) + additional_chars
+        for c in charset:
             bbox = font.getbbox(c)
             w = int(bbox[2] - bbox[0])
             h = int(bbox[3] - bbox[1])
@@ -83,12 +89,12 @@ class Font(Asset, UserDict):
 
         max_h = max_bottom_y - min_offset_y
         self.atlas: Sprite = Sprite.blank(
-            int(max_w * len(CHARACTERS)) +
+            int(max_w * len(charset)) +
             font_size // 3, int(max_h)
         )
 
         try:
-            for i, c in enumerate(CHARACTERS):
+            for i, c in enumerate(charset):
                 w, h, offset_y = glyph_data[c]
                 mask = font.getmask(c)
                 c_bitmap = np.array(mask).reshape(mask.size[::-1])
@@ -107,7 +113,7 @@ class Font(Asset, UserDict):
                 self[c] = cx, cw
 
             # Space character
-            self[" "] = max_w * len(CHARACTERS), font_size // 3
+            self[" "] = max_w * len(charset), font_size // 3
         except (ValueError, IndexError) as e:
             raise FontLoadError("Couldn't create font atlas: ", e) from e
 

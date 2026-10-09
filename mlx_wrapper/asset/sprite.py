@@ -32,8 +32,6 @@ class Sprite(Asset):
         pointer and dimensions.
 
         Args:
-            mlx (Mlx): MLX instance.
-            mlx_ptr (int): MLX pointer.
             img_ptr (int): MLX image pointer.
             width (int): Width of the sprite.
             height (int): Height of the sprite.
@@ -47,9 +45,10 @@ class Sprite(Asset):
             raise ImageAllocationError(
                 f"Failed to allocate a new image {width}x{height}"
             )
-        mlx, mlx_ptr = Asset.get_context()
+        mlx, mlx_ptr, win_ptr = Asset.get_context()
         self.mlx: Mlx = mlx
         self.mlx_ptr: int = mlx_ptr
+        self.win_ptr: int = win_ptr
         self.img_ptr: int = img_ptr
         self.width: int = width
         self.height: int = height
@@ -83,7 +82,7 @@ class Sprite(Asset):
             Sprite: The created blank sprite.
 
         """
-        mlx, mlx_ptr = cls.get_context()
+        mlx, mlx_ptr, _ = cls.get_context()
         img_ptr = mlx.mlx_new_image(mlx_ptr, width, height)
         blank = cls(img_ptr, width, height)
         blank.fill(0)
@@ -100,7 +99,7 @@ class Sprite(Asset):
             Sprite: The loaded sprite.
 
         """
-        mlx, mlx_ptr = cls.get_context()
+        mlx, mlx_ptr, _ = cls.get_context()
         ext = os.path.splitext(file_path)[1].lower()
 
         match ext:
@@ -213,17 +212,16 @@ class Sprite(Asset):
                 f"on target={target} at dest={(dest_x, dest_y)}"
             ) from e
 
-    def draw_to_window(self, win_ptr: int, x: int, y: int) -> None:
+    def draw_to_window(self, x: int, y: int) -> None:
         """Draw to the window at (x, y).
 
         Args:
-            win_ptr (int): Window pointer.
             x (int): X-coordinate.
             y (int): Y-coordinate.
 
         """
         self.mlx.mlx_put_image_to_window(
-            self.mlx_ptr, win_ptr, self.img_ptr, x, y
+            self.mlx_ptr, self.win_ptr, self.img_ptr, x, y
         )
 
     def _custom_destroy(self) -> None:
