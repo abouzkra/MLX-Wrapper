@@ -29,6 +29,8 @@ ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
                                 type="xs:positiveInteger" use="required"/>
                                 <xs:attribute name="spacing"
                                 type="xs:positiveInteger" use="optional"/>
+                                <xs:attribute name="additional_chars"
+                                type="xs:string" use="optional"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
@@ -148,7 +150,8 @@ class AssetManager:
             font_path = os.path.join(base_dir, font_el.attrib['path'])
             font_size = int(font_el.get('size', 16))
             font_spacing = int(font_el.get('spacing', 1))
-            self.fonts[font_id] = Font(font_path, font_size, font_spacing)
+            additional_chars = font_el.get('additional_chars', '')
+            self.fonts[font_id] = Font(font_path, font_size, additional_chars, font_spacing)
 
         for anim_sprite_el in xml_tree.iterfind(".//animated_sprite"):
             anim_sprite_id = anim_sprite_el.attrib['id']

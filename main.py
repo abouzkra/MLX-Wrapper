@@ -47,7 +47,7 @@ class TestApp(MLXApp):
         )
         self.am.get_font("minecraft").draw_text(self.main, "ap", 10, 10)
 
-        self.main.draw_to_window(self.win_ptr, 0, 0)
+        self.main.draw_to_window(0, 0)
 
     def move_left(self) -> None:
         self.player_x = max(0.0, self.player_x - self.player_speed * self.dt)

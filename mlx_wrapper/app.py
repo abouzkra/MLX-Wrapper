@@ -47,7 +47,7 @@ class MLXApp:
         if self.win_ptr == 0:
             raise NativeCallError("mlx_new_window failed to create window")
 
-        Asset.set_context(self.mlx, self.mlx_ptr)
+        Asset.set_context(self.mlx, self.mlx_ptr, self.win_ptr)
         self.width: int = width
         self.height: int = height
 
