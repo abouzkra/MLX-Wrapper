@@ -65,7 +65,7 @@ class Font(Asset, UserDict):
         self.mlx_ptr: int = mlx_ptr
         self.size: int = font_size
         self.spacing: int = spacing
-        self._rasterized_strs: dict[tuple[str, int], Sprite] = {}
+        self._static_strs: dict[tuple[str, int], Sprite] = {}
         self._dynamic_strs: dict[str, tuple[str, int, Sprite]] = {}
 
         try:
@@ -216,11 +216,11 @@ class Font(Asset, UserDict):
                 text_sprite = self.rasterize_text(text, color)
                 self._dynamic_strs[id] = (text, color, text_sprite)
         elif cache:
-            if (text, color) in self._rasterized_strs:
-                text_sprite = self._rasterized_strs[(text, color)]
+            if (text, color) in self._static_strs:
+                text_sprite = self._static_strs[(text, color)]
             else:
                 text_sprite = self.rasterize_text(text, color)
-                self._rasterized_strs[(text, color)] = text_sprite
+                self._static_strs[(text, color)] = text_sprite
         else:
             text_sprite = self.rasterize_text(text, color)
             text_sprite.blit(target, x, y)
@@ -231,9 +231,9 @@ class Font(Asset, UserDict):
 
     def clear_cache(self) -> None:
         """Clear the cache of rasterized text."""
-        for sprite in self._rasterized_strs.values():
+        for sprite in self._static_strs.values():
             sprite.destroy()
-        self._rasterized_strs.clear()
+        self._static_strs.clear()
 
         for _, __, sprite in self._dynamic_strs.values():
             sprite.destroy()
