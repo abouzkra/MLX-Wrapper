@@ -151,7 +151,9 @@ class AssetManager:
             font_size = int(font_el.get('size', 16))
             font_spacing = int(font_el.get('spacing', 1))
             additional_chars = font_el.get('additional_chars', '')
-            self.fonts[font_id] = Font(font_path, font_size, additional_chars, font_spacing)
+            self.fonts[font_id] = Font(
+                font_path, font_size, additional_chars, font_spacing
+            )
 
         for anim_sprite_el in xml_tree.iterfind(".//animated_sprite"):
             anim_sprite_id = anim_sprite_el.attrib['id']
