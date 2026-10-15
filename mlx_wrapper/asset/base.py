@@ -21,7 +21,9 @@ class Asset(ABC):
     __win_ptr: ClassVar[int | None] = None
 
     @classmethod
-    def set_context(cls, mlx: Mlx | None, mlx_ptr: int | None, win_ptr: int | None) -> None:
+    def set_context(
+        cls, mlx: Mlx | None, mlx_ptr: int | None, win_ptr: int | None
+    ) -> None:
         if (
             cls.__mlx is not None
             or cls.__mlx_ptr is not None

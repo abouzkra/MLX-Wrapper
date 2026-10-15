@@ -58,7 +58,6 @@ class Font(Asset, UserDict):
             font_path (str): Path to the font file.
             font_size (int): Font size.
             spacing (int): Spacing between characters. Defaults to 1.
-
         """
         UserDict.__init__(self)
         mlx, mlx_ptr, _ = Asset.get_context()
@@ -66,7 +65,8 @@ class Font(Asset, UserDict):
         self.mlx_ptr: int = mlx_ptr
         self.size: int = font_size
         self.spacing: int = spacing
-        self.rasterized_strings: dict[tuple[str, int], Sprite] = {}
+        self._static_strs: dict[tuple[str, int], Sprite] = {}
+        self._dynamic_strs: dict[str, tuple[str, int, Sprite]] = {}
 
         try:
             font = ImageFont.truetype(font_path, font_size)
@@ -125,7 +125,6 @@ class Font(Asset, UserDict):
 
         Returns:
             tuple[int, int]: Position and width of the character in the atlas.
-
         """
         if key not in self:
             return self.data["▯"]
@@ -139,7 +138,6 @@ class Font(Asset, UserDict):
 
         Returns:
             int: Width of the text in pixels.
-
         """
         if not text:
             raise AssetError("Cannot measure empty string")
@@ -147,18 +145,12 @@ class Font(Asset, UserDict):
             np.sum([self[c][1] for c in text]) + (len(text) - 1) * self.spacing
         )
 
-    def rasterize_text(
-        self,
-        text: str,
-        color: int = 0xFF000000
-    ) -> Sprite:
-        """Rasterize text into a sprite, and store it in the rasterized_strings
-        cache.
+    def rasterize_text(self, text: str, color: int = 0xFF000000) -> Sprite:
+        """Rasterize text into a sprite.
 
         Args:
             text (str): Text to rasterize.
             color (int): Color of the text.
-
         """
         if not text:
             raise RenderingError("Cannot render empty string")
@@ -189,37 +181,66 @@ class Font(Asset, UserDict):
         text: str,
         x: int,
         y: int,
+        id: str | None = None,
         color: int = 0xFF000000,
         cache: bool = False
     ) -> None:
         """Draw text on the target sprite using the specified color.
+
+        Usage:
+            One-time use text: cache=False, id=None
+            Static text: cache=True, id=None
+            Dynamic text: id=<some_id>
 
         Args:
             target (Sprite): Target sprite to draw on.
             text (str): Text to draw.
             x (int): X position of the text.
             y (int): Y position of the text.
+            id (str | None): Identifier for caching the text.
             color (int): Color of the text. Defaults to 0xFF000000.
             cache (bool): Whether to cache the rasterized text.
                 Defaults to False.
-
         """
         if not text:
             raise RenderingError("Text cannot be empty.")
 
-        if (text, color) in self.rasterized_strings:
-            text_sprite = self.rasterized_strings[(text, color)]
+        if id is not None:
+            if id in self._dynamic_strs:
+                prev_text, prev_color, text_sprite = self._dynamic_strs[id]
+                if prev_text != text or color != prev_color:
+                    text_sprite.destroy()
+                    text_sprite = self.rasterize_text(text, color)
+                    self._dynamic_strs[id] = (text, color, text_sprite)
+            else:
+                text_sprite = self.rasterize_text(text, color)
+                self._dynamic_strs[id] = (text, color, text_sprite)
+        elif cache:
+            if (text, color) in self._static_strs:
+                text_sprite = self._static_strs[(text, color)]
+            else:
+                text_sprite = self.rasterize_text(text, color)
+                self._static_strs[(text, color)] = text_sprite
         else:
             text_sprite = self.rasterize_text(text, color)
-            if cache:
-                self.rasterized_strings[(text, color)] = text_sprite
+            text_sprite.blit(target, x, y)
+            text_sprite.destroy()
+            return
 
         text_sprite.blit(target, x, y)
+
+    def clear_cache(self) -> None:
+        """Clear the cache of rasterized text."""
+        for sprite in self._static_strs.values():
+            sprite.destroy()
+        self._static_strs.clear()
+
+        for _, __, sprite in self._dynamic_strs.values():
+            sprite.destroy()
+        self._dynamic_strs.clear()
 
     def _custom_destroy(self) -> None:
         """Destroy the font, freeing its resources and clear cached strings."""
 
-        for sprite in self.rasterized_strings.values():
-            sprite.destroy()
-        self.rasterized_strings.clear()
+        self.clear_cache()
         self.atlas.destroy()
