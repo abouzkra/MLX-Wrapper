@@ -25,6 +25,8 @@ class TestApp(MLXApp):
         self.player_y = (self.height - self.player.height) // 2
         self.player_speed = 300.0
 
+        self.timer = 200
+
         self.iori1.play()
         self.iori2.play()
         self.iori2.current_index = 9
@@ -34,7 +36,19 @@ class TestApp(MLXApp):
         self.bind_key(KEY_UP, self.move_up, held=True)
         self.bind_key(KEY_DOWN, self.move_down, held=True)
 
+    def update_timer(self) -> None:
+        self.timer -= self.dt
+
+    def draw_timer(self) -> None:
+        font = self.am.get_font("minecraft")
+        min, sec = divmod(self.timer, 60)
+        timer_text = f"{int(min):02}:{int(sec):02}"
+        font.draw_text(
+            self.main, timer_text, 10, 10, id="timer", color=0xFF000000
+        )
+
     def update(self) -> None:
+        self.update_timer()
         self.iori1.update(self.dt)
         self.iori2.update(self.dt)
 
@@ -45,7 +59,7 @@ class TestApp(MLXApp):
         self.player.blit(
             self.main, int(self.player_x), int(self.player_y)
         )
-        self.am.get_font("minecraft").draw_text(self.main, "ap", 10, 10)
+        self.draw_timer()
 
         self.main.draw_to_window(0, 0)
 
@@ -74,7 +88,7 @@ class TestApp(MLXApp):
 
 if __name__ == "__main__":
     try:
-        app = TestApp(1200, 800, "test window")
+        app = TestApp(1200, 800, "test window", target_fps=30)
         app.start()
     except MLXError as e:
         print(f"Error: {e}")
