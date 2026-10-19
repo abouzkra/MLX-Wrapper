@@ -1,3 +1,31 @@
+"""Wrapper for the 42 school MiniLibX graphics library.
+
+Designed to simplify:
+    - Window management
+    - Event handling
+    - Rendering
+    - Asset management
+
+Components:
+    - MLXApp: Main application controller, simplifies the creation and
+        management of a window, event loop and event handling.
+    - AssetManager: Manages the loading and unloading of assets through an xml
+        manifest file (the structure is defined in the project's README.md
+        file).
+    - Assets:
+        - Sprite: Abstraction for the MLX images, can be drawn to the screen,
+            blitted on another one through alpha blending, loaded from a
+            png/xpm file.
+        - AnimatedSprite: Just a list of sprites that are played in various
+            modes (loop, once, ping-pong).
+        - Font: Creates a bitmap font atlas from a TrueType font file,
+            allowing text rendering with custom font sizes and colors.
+    - Exceptions: Comprehensive exception classes for handling errors related
+        to window errors, asset loading/rendering, and resource management...
+    - Keys: X11 keycode constants for use in event handling.
+"""
+
+
 from .app import MLXApp
 from .asset.animated_sprite import AnimatedSprite, LoopMode
 from .asset.font import Font
@@ -13,6 +41,7 @@ from .exceptions import (
     NativeCallError,
     RenderingError,
 )
+
 from .keys import (
     # Arrow keys
     KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP,
@@ -27,6 +56,7 @@ from .keys import (
     KEY_0, KEY_1, KEY_2, KEY_3, KEY_4,
     KEY_5, KEY_6, KEY_7, KEY_8, KEY_9
 )
+
 from .manager import AssetManager
 
 __all__ = [

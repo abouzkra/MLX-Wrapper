@@ -1,3 +1,5 @@
+"""AssetManager implementation for simplified asset management."""
+
 import copy
 import os
 
@@ -95,8 +97,7 @@ ASSET_SCHEMA = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 class AssetManager:
-    """Manages the loading and storage of the wrapper's assets (Sprites,
-    Fonts, Animated Sprites).
+    """Manage the loading and storage of the wrapper's assets.
 
     It loads assets from the specified XML file, and validates its structure
     against the predefined XML schema (XSD) above.
@@ -107,6 +108,7 @@ class AssetManager:
         animated_sprites (dict[str, AnimatedSprite]): Dictionary of Animated
             Sprites.
     """
+
     def __init__(self, xml_file: str) -> None:
         """Initialize the AssetManager using the specified XML file.
 
@@ -175,7 +177,7 @@ class AssetManager:
             )
 
     def _check_id(self, asset_id: str) -> None:
-        """Helper method to check if an asset's id is globally unique.
+        """Check if an asset's id is globally unique.
 
         Args:
             asset_id (str): The id of the asset to check.
@@ -192,7 +194,7 @@ class AssetManager:
         self._seen_ids.add(asset_id)
 
     def _validate_xml(self, xml_tree: et.ElementTree[et.Element[str]]) -> None:
-        """Helper method to validate the XML assets file against the schema.
+        """Validate the XML assets file against the schema.
 
         Args:
             xml_tree (et.ElementTree[et.Element[str]]): The parsed XML tree.
@@ -299,7 +301,10 @@ class AssetManager:
         """Destroy all loaded assets."""
         for s in self.sprites.values():
             s.destroy()
+        self.sprites.clear()
         for f in self.fonts.values():
             f.destroy()
+        self.fonts.clear()
         for a_s in self.animated_sprites.values():
             a_s.destroy()
+        self.animated_sprites.clear()

@@ -1,3 +1,11 @@
+"""Core MLX application class.
+
+Provides the `MLXApp` class, which acts as the main controller for
+42 school MiniLibX apps. Handles window initialization, event hooks
+(key press/release and window closing), contiuous input polling, frame
+rate limiting and application shutdown/cleanup.
+"""
+
 import time
 from collections.abc import Callable
 from typing import Any
@@ -7,6 +15,7 @@ from mlx import Mlx
 from .asset.base import Asset
 from .exceptions import MLXError, NativeCallError
 
+# Type alias for callback functions
 Callback = tuple[Callable[..., None], Any, Any]
 
 
@@ -14,20 +23,19 @@ class MLXApp:
     """Simple wrapper for the 42 school's MLX library.
 
     Attributes:
-        mlx: MLX instance.
-        mlx_ptr: MLX pointer.
-        win_ptr: Window pointer.
-        width: Width of the window.
-        height: Height of the window.
-        target_fps: Target frames per second.
-        active_keys: Set of active keys.
-
+        mlx (Mlx): MLX instance.
+        mlx_ptr (int): MLX pointer.
+        win_ptr (int): Window pointer.
+        width (int): Width of the window.
+        height (int): Height of the window.
+        target_fps (int): Target frames per second.
+        active_keys (set[int]): Set of active keys.
     """
 
     def __init__(
         self, width: int, height: int, title: str, target_fps: int = 60
     ) -> None:
-        """MLXApp constructor.
+        """Initialize the MLXApp.
 
         Args:
             width (int): Width of the window.
@@ -35,7 +43,6 @@ class MLXApp:
             title (str): Title of the window.
             target_fps (int, optional): Target frames per second.
                 Defaults to 60.
-
         """
         self.mlx: Mlx = Mlx()
         self.mlx_ptr: int = self.mlx.mlx_init()
@@ -102,10 +109,8 @@ class MLXApp:
 
         Args:
             *args: Variable length argument list.
-
         """
         self.mlx.mlx_loop_exit(self.mlx_ptr)
-        print("Mlx loop exit")
 
     def bind_key(
         self,
@@ -124,7 +129,6 @@ class MLXApp:
                 Defaults to False.
             *args: Variable length argument list.
             **kwargs: Variable length keyword arguments.
-
         """
         if key in self._key_handlers or key in self._held_key_handlers:
             print(f"Warning: key {key} already has a handler")
@@ -153,7 +157,6 @@ class MLXApp:
         Args:
             key (int): Key code of the pressed key.
             *args: Variable length argument list.
-
         """
         self.active_keys.add(key)
         if key in self._key_handlers:
@@ -168,7 +171,6 @@ class MLXApp:
         Args:
             key (int): Key code of the released key.
             *args: Variable length argument list.
-
         """
         self.active_keys.discard(key)
 
@@ -181,7 +183,6 @@ class MLXApp:
 
         Args:
             *args: Variable length argument list.
-
         """
         current_time = time.perf_counter()
         elapsed = current_time - self._last_time
@@ -193,8 +194,8 @@ class MLXApp:
 
         for k in list(self._held_key_handlers):
             if k in self.active_keys:
-                cb, args, kwargs = self._held_key_handlers[k]
-                cb(*args, **kwargs)
+                cb, cb_args, cb_kwargs = self._held_key_handlers[k]
+                cb(*cb_args, **cb_kwargs)
 
         self._last_time = current_time
 
@@ -206,9 +207,9 @@ class MLXApp:
     def update(self) -> None:
         """Update function.
 
+        Should be overridden by subclasses to update the application state.
         Called every frame to update the application state according to
         the elapsed time.
-
         """
 
     def _shutdown(self) -> None:
@@ -219,11 +220,8 @@ class MLXApp:
         """
         self.mlx.mlx_do_key_autorepeaton(self.mlx_ptr)
         self._cleanup()
-        print("destroy win")
         self.mlx.mlx_destroy_window(self.mlx_ptr, self.win_ptr)
         self.win_ptr = 0
-
-        print("destroy mlx")
         self.mlx.mlx_release(self.mlx_ptr)
         self.mlx_ptr = 0
 
@@ -233,12 +231,11 @@ class MLXApp:
         Executes the cleanup hook and clears the asset context.
         Should be overridden by subclasses to perform additional cleanup.
         """
-
         self.on_cleanup()
         Asset.clear_context()
 
     def on_cleanup(self) -> None:
-        """Hook for additional cleanup.
+        """Cleanup hook for additional cleanup.
 
         Should be overridden by sublcasses to perform additional cleanup.
         """

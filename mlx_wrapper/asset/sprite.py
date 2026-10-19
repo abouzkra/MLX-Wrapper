@@ -1,3 +1,5 @@
+"""Sprite asset implementation."""
+
 import os
 
 import numpy as np
@@ -28,8 +30,7 @@ class Sprite(Asset):
     def __init__(
         self, img_ptr: int, width: int, height: int
     ) -> None:
-        """Initialize a Sprite instance with the given MLX image
-        pointer and dimensions.
+        """Initialize a Sprite instance.
 
         Args:
             img_ptr (int): MLX image pointer.
@@ -116,33 +117,6 @@ class Sprite(Asset):
             raise ImageLoadError(f"Could not load sprite file: '{file_path}'")
 
         return cls(res[0], res[1], res[2])
-
-    def set_pixel(self, x: int, y: int, color: int) -> None:
-        """Set pixel at (x, y) to the given color.
-
-        Args:
-            x (int): X-coordinate of the pixel.
-            y (int): Y-coordinate of the pixel.
-            color (int): Color value to set.
-
-        """
-        if 0 <= x < self.width and 0 <= y < self.height:
-            self.pixels[y, x] = color & 0xFFFFFFFF
-
-    def get_pixel(self, x: int, y: int) -> int:
-        """Get the color of the pixel at (x, y).
-
-        Args:
-            x (int): X-coordinate of the pixel.
-            y (int): Y-coordinate of the pixel.
-
-        Returns:
-            int: Color value of the pixel.
-
-        """
-        if 0 <= x < self.width and 0 <= y < self.height:
-            return int(self.pixels[y, x])
-        return 0
 
     def fill(self, color: int) -> None:
         """Fill the sprite with the given color.
