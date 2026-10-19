@@ -159,3 +159,10 @@ python3 main.py
 # using uv
 uv run python3 main.py
 ```
+
+# Resources
+
+- [Compositing and blend modes](https://ssp.impulsetrain.com/porterduff.html)
+- [Game Loop](https://gameprogrammingpatterns.com/game-loop.html)
+- [mlx_CLXV](https://github.com/42school/mlx_CLXV/tree/main/src)
+- [MiniLibx documentation](https://harm-smits.github.io/42docs/libs/minilibx/getting_started.html)
