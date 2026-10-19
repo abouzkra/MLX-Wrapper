@@ -1,3 +1,5 @@
+"""Base class implementation for assets."""
+
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
 
@@ -24,6 +26,7 @@ class Asset(ABC):
     def set_context(
         cls, mlx: Mlx | None, mlx_ptr: int | None, win_ptr: int | None
     ) -> None:
+        """Set the MLX context for the asset."""
         if (
             cls.__mlx is not None
             or cls.__mlx_ptr is not None
@@ -37,6 +40,7 @@ class Asset(ABC):
 
     @classmethod
     def get_context(cls) -> tuple[Mlx, int, int]:
+        """Return the current MLX context, raising an error if not set."""
         if cls.__mlx is None or not cls.__mlx_ptr or not cls.__win_ptr:
             raise MLXError("Found no MLX context. Initialize an app first!")
 
@@ -44,6 +48,7 @@ class Asset(ABC):
 
     @classmethod
     def clear_context(cls) -> None:
+        """Clear the MLX context, resetting the class-level variables."""
         cls.__mlx = None
         cls.__mlx_ptr = None
         cls.__win_ptr = None
@@ -66,14 +71,14 @@ class Asset(ABC):
 
     @abstractmethod
     def _custom_destroy(self) -> None:
-        """Hook for customized asset destruction.
+        """Customize asset destruction.
 
         This should be overridden in every subclass to provide comprehensive
         asset destruction.
         """
 
     def __getattr__(self, name: str) -> Any:
-        """Intercepts missing attributes to prevent destroyed asset usage.
+        """Intercept missing attributes to prevent destroyed asset usage.
 
         name (str): Name of the attribute.
 
