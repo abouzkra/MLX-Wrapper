@@ -1,3 +1,5 @@
+"""Animated sprite implementation."""
+
 from enum import Enum
 
 from ..exceptions import AssetError
@@ -42,8 +44,7 @@ class AnimatedSprite(Asset):
         fps: int = 12,
         loop_mode: LoopMode = LoopMode.LOOP,
     ) -> None:
-        """Initialize an animated sprite with the given frames, frames per
-        second, and loop mode.
+        """Initialize an animated sprite.
 
         Args:
             frames (list[Sprite]): List of frames for the animation.
@@ -148,6 +149,9 @@ class AnimatedSprite(Asset):
         self.frames[self.current_index].draw_to_window(x, y)
 
     def _custom_destroy(self) -> None:
-        """Destroy the animated sprite, freeing its resources."""
+        """Destroy the animated sprite, freeing its resources.
 
+        To prevent memory leaks, the frames should be destroyed
+        before the animated sprite is destroyed.
+        """
         self.frames = []

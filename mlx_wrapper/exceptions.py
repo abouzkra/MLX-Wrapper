@@ -1,3 +1,6 @@
+"""MLX wrapper exceptions."""
+
+
 class MLXError(Exception):
     """Base MLX wrapper exception."""
 

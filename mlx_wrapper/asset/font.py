@@ -1,3 +1,5 @@
+"""Font asset implementation."""
+
 import string
 from collections import UserDict
 from typing import Any
@@ -13,8 +15,7 @@ from .sprite import Sprite
 
 
 class Font(Asset, UserDict):
-    """Representation of a font as a bitmap atlas for rendering text on the
-    MLX canvas.
+    """Representation of a font as a bitmap atlas for text rendering.
 
     It Behaves as a dictionary where the keys are the specified characters
     above (`CHARACTERS`), and the values are a tuple containing:
@@ -241,6 +242,5 @@ class Font(Asset, UserDict):
 
     def _custom_destroy(self) -> None:
         """Destroy the font, freeing its resources and clear cached strings."""
-
         self.clear_cache()
         self.atlas.destroy()
