@@ -2,6 +2,7 @@
 
 import copy
 import os
+import sys
 
 from lxml import etree as et
 
@@ -175,6 +176,19 @@ class AssetManager:
             self.animated_sprites[anim_sprite_id] = AnimatedSprite(
                 frames, anim_sprite_fps, loop_mode
             )
+
+    @staticmethod
+    def _resolve_resource_path(relative_path: str) -> str:
+        """Get absolute path to resource, works for dev and PyInstaller.
+
+        Args:
+            relative_path: Relative path to the resource.
+        """
+        if getattr(sys, 'frozen', False):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
     def _check_id(self, asset_id: str) -> None:
         """Check if an asset's id is globally unique.
