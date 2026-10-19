@@ -1,11 +1,13 @@
-from mlx_wrapper import MLXApp, Sprite
-from mlx_wrapper.exceptions import MLXError
-from mlx_wrapper.manager import AssetManager
-
-KEY_LEFT = 0xFF51
-KEY_UP = 0xFF52
-KEY_RIGHT = 0xFF53
-KEY_DOWN = 0xFF54
+from mlx_wrapper import (
+    KEY_DOWN,
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_UP,
+    AssetManager,
+    MLXApp,
+    MLXError,
+    Sprite,
+)
 
 
 class TestApp(MLXApp):
