@@ -2,6 +2,7 @@
 
 import copy
 import os
+import sys
 
 from lxml import etree as et
 
@@ -120,6 +121,7 @@ class AssetManager:
             AssetError: If an asset loading failure occurs.
 
         """
+        xml_file = self._resolve_resource_path(xml_file)
         self.fonts: dict[str, Font] = {}
         self.sprites: dict[str, Sprite] = {}
         self.animated_sprites: dict[str, AnimatedSprite] = {}
@@ -143,13 +145,17 @@ class AssetManager:
         for sprite_el in xml_tree.iterfind(".//sprite"):
             sprite_id = sprite_el.attrib['id']
             self._check_id(sprite_id)
-            sprite_path = os.path.join(base_dir, sprite_el.attrib['path'])
+            sprite_path = self._resolve_resource_path(
+                os.path.join(base_dir, sprite_el.attrib['path'])
+            )
             self.sprites[sprite_id] = Sprite.from_file(sprite_path)
 
         for font_el in xml_tree.iterfind(".//font"):
             font_id = font_el.attrib['id']
             self._check_id(font_id)
-            font_path = os.path.join(base_dir, font_el.attrib['path'])
+            font_path = self._resolve_resource_path(
+                os.path.join(base_dir, font_el.attrib['path'])
+            )
             font_size = int(font_el.get('size', 16))
             font_spacing = int(font_el.get('spacing', 1))
             additional_chars = font_el.get('additional_chars', '')
@@ -169,12 +175,29 @@ class AssetManager:
             elif loop_mode == 'ping_pong':
                 loop_mode = LoopMode.PINGPONG
             frames = [
-                Sprite.from_file(os.path.join(base_dir, frame.get("path")))
+                Sprite.from_file(
+                    self._resolve_resource_path(
+                        os.path.join(base_dir, frame.get("path"))
+                    )
+                )
                 for frame in anim_sprite_el.iterfind(".//frame")
             ]
             self.animated_sprites[anim_sprite_id] = AnimatedSprite(
                 frames, anim_sprite_fps, loop_mode
             )
+
+    @staticmethod
+    def _resolve_resource_path(relative_path: str) -> str:
+        """Get absolute path to resource, works for dev and PyInstaller.
+
+        Args:
+            relative_path: Relative path to the resource.
+        """
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
     def _check_id(self, asset_id: str) -> None:
         """Check if an asset's id is globally unique.
@@ -266,36 +289,6 @@ class AssetManager:
                 f"No animated sprite with id '{id}' was found."
             )
         return copy.copy(self.animated_sprites[id])
-
-    def unload_sprite(self, id: str) -> None:
-        """Unload a sprite.
-
-        Args:
-            id (str): ID of the sprite to unload.
-        """
-        if id in self.sprites:
-            self.sprites[id].destroy()
-            self.sprites.pop(id)
-
-    def unload_font(self, id: str) -> None:
-        """Unload a font.
-
-        Args:
-            id (str): ID of the font to unload.
-        """
-        if id in self.fonts:
-            self.fonts[id].destroy()
-            self.fonts.pop(id)
-
-    def unload_animated_sprite(self, id: str) -> None:
-        """Unload an animated sprite.
-
-        Args:
-            id (str): ID of the animated sprite to unload.
-        """
-        if id in self.animated_sprites:
-            self.animated_sprites[id].destroy()
-            self.animated_sprites.pop(id)
 
     def clear(self) -> None:
         """Destroy all loaded assets."""
