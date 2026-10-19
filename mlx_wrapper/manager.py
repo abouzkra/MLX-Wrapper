@@ -177,8 +177,7 @@ class AssetManager:
             frames = [
                 Sprite.from_file(
                     self._resolve_resource_path(
-                        os.path.join(base_dir, frame.get("path")
-                        )
+                        os.path.join(base_dir, frame.get("path"))
                     )
                 )
                 for frame in anim_sprite_el.iterfind(".//frame")
@@ -194,7 +193,7 @@ class AssetManager:
         Args:
             relative_path: Relative path to the resource.
         """
-        if getattr(sys, 'frozen', False):
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
             base_path = sys._MEIPASS
         else:
             base_path = os.path.abspath(".")
