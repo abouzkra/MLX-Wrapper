@@ -130,9 +130,9 @@ class AssetManager:
 
         try:
             xml_tree = et.parse(xml_file)
-        except OSError as e:
+        except OSError:
             raise AssetManagerError(
-                f"Couldn't load XML asset file '{xml_file}': {e}"
+                f"Couldn't load XML asset file '{xml_file}'"
             )
         except et.XMLSyntaxError as e:
             raise AssetManagerError(
